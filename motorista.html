@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Registro de Frete — Motorista</title>
+<link rel="manifest" href="manifest-motorista.json">
+<meta name="theme-color" content="#1A5FA8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Frete Motorista">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/dist/tabler-icons.min.css">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+
+<style>
+:root{
+  --blue:#1A5FA8;--blue-dark:#0D3F75;--blue-light:#E8F0FB;
+  --green:#276C14;--green-light:#EAF3E0;
+  --amber:#8A4A00;--amber-light:#FEF0DA;
+  --red:#8B1A1A;--red-light:#FCEAEA;
+  --gray-1:#F7F8FA;--gray-2:#ECEEF2;--gray-3:#D1D5DF;
+  --gray-4:#8A90A0;--gray-5:#3D4250;--gray-6:#1A1D26;
+  --radius:14px;--radius-sm:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:#F0F4FA;color:var(--gray-6);min-height:100vh;padding-bottom:40px}
+
+.header{background:var(--blue);color:#fff;padding:20px 20px 28px;position:relative;overflow:hidden}
+.header::after{content:'';position:absolute;bottom:-20px;left:0;right:0;height:40px;background:#F0F4FA;border-radius:50% 50% 0 0/40px 40px 0 0}
+.header-logo{font-size:13px;opacity:.8;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.header-title{font-size:22px;font-weight:700}
+.header-sub{font-size:13px;opacity:.75;margin-top:2px}
+
+.body{padding:24px 16px 0}
+
+/* Motorista selector */
+.motorista-card{background:#fff;border-radius:var(--radius);padding:18px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.motorista-label{font-size:11px;font-weight:700;color:var(--gray-4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.motorista-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mot-btn{padding:12px 8px;border-radius:var(--radius-sm);border:2px solid var(--gray-2);background:#fff;font-size:14px;font-weight:600;color:var(--gray-5);cursor:pointer;text-align:center;transition:.15s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.mot-btn i{font-size:22px;color:var(--gray-4)}
+.mot-btn.sel{border-color:var(--blue);background:var(--blue-light);color:var(--blue)}
+.mot-btn.sel i{color:var(--blue)}
+
+/* Form */
+.form-card{background:#fff;border-radius:var(--radius);padding:18px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.form-title{font-size:14px;font-weight:700;color:var(--gray-6);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.form-title i{color:var(--blue);font-size:18px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--gray-5);margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;padding:13px 14px;border:1.5px solid var(--gray-3);border-radius:var(--radius-sm);font-size:15px;font-family:'DM Sans',sans-serif;color:var(--gray-6);background:#fff;-webkit-appearance:none;transition:.12s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,95,168,.12)}
+.field textarea{resize:none;line-height:1.5}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Tipo toggle */
+.tipo-row{display:flex;gap:8px;margin-bottom:14px}
+.tipo-opt{flex:1;padding:12px 6px;border-radius:var(--radius-sm);border:2px solid var(--gray-2);background:#fff;font-size:13px;font-weight:600;color:var(--gray-4);cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;transition:.15s}
+.tipo-opt i{font-size:20px}
+.tipo-opt.fat.sel{border-color:var(--green);background:var(--green-light);color:var(--green)}
+.tipo-opt.men.sel{border-color:#5A1D9A;background:#EEE6FB;color:#5A1D9A}
+
+/* Submit */
+.btn-submit{width:100%;padding:18px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-size:17px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s;margin-top:4px}
+.btn-submit:active{background:var(--blue-dark);transform:scale(.98)}
+.btn-submit:disabled{background:var(--gray-3);cursor:not-allowed}
+
+/* Success */
+.success-card{background:#fff;border-radius:var(--radius);padding:28px 20px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.08);display:none}
+.success-icon{width:70px;height:70px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:36px;color:var(--green)}
+.success-title{font-size:20px;font-weight:700;color:var(--green);margin-bottom:6px}
+.success-sub{font-size:14px;color:var(--gray-4);margin-bottom:20px}
+.btn-novo{width:100%;padding:15px;background:var(--blue-light);color:var(--blue);border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer}
+
+/* Histórico */
+.hist-card{background:#fff;border-radius:var(--radius);padding:18px;margin-top:16px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.hist-title{font-size:13px;font-weight:700;color:var(--gray-4);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+.hist-item{padding:12px 0;border-bottom:1px solid var(--gray-2);display:flex;justify-content:space-between;align-items:flex-start}
+.hist-item:last-child{border-bottom:none;padding-bottom:0}
+.hist-left{flex:1}
+.hist-servico{font-size:13px;font-weight:600;color:var(--gray-6);margin-bottom:2px}
+.hist-meta{font-size:11px;color:var(--gray-4)}
+.hist-right{text-align:right}
+.hist-valor{font-size:14px;font-weight:700;color:var(--blue)}
+.hist-status{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:3px;display:inline-block}
+.st-pend{background:var(--amber-light);color:var(--amber)}
+.st-aprov{background:var(--green-light);color:var(--green)}
+.st-rej{background:var(--red-light);color:var(--red)}
+
+/* Alert */
+.alert{padding:14px 16px;border-radius:var(--radius-sm);font-size:14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;font-weight:500}
+.alert-err{background:var(--red-light);color:var(--red);border:1.5px solid #F5C0C0}
+
+/* Offline banner */
+.offline-banner{background:#FEF0DA;color:var(--amber);font-size:12px;font-weight:600;text-align:center;padding:8px;display:none}
+.offline-banner.show{display:block}
+
+/* Config needed */
+.config-needed{background:#fff;border-radius:var(--radius);padding:24px;margin:16px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.config-needed i{font-size:48px;color:var(--amber);display:block;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<div class="offline-banner" id="offline-banner">
+  <i class="ti ti-wifi-off"></i> Sem conexão — os dados serão enviados quando reconectar
+</div>
+
+<div class="header">
+  <div class="header-logo"><i class="ti ti-truck"></i> Marco Tulio Salome Oliveira</div>
+  <div class="header-title">Registro de Frete</div>
+  <div class="header-sub">Preencha os dados do serviço realizado</div>
+</div>
+
+<div class="body" id="app-body">
+  <!-- Renderizado via JS -->
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// CONFIGURAÇÃO FIREBASE — preencha com seus dados
+// ══════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBRcsXHRXG2HgUjl87xkpLzGT6GcrbN8v8",
+  authDomain: "fretes-marco.firebaseapp.com",
+  projectId: "fretes-marco",
+  storageBucket: "fretes-marco.firebasestorage.app",
+  messagingSenderId: "998234786464",
+  appId: "1:998234786464:web:007d3b1d00ae0626acd7c5"
+};
+// ══════════════════════════════════════════════════
+
+const MOTORISTAS = [
+  'Motorista 1',
+  'Motorista 2',
+  'Motorista 3',
+  'Motorista 4',
+  'Motorista 5'
+];
+// Edite os nomes acima com os nomes reais dos seus motoristas
+
+const ICONES = ['ti-user','ti-user','ti-user','ti-user','ti-user'];
+
+let db = null;
+let motSelecionado = localStorage.getItem('mot_nome') || '';
+let tipo = localStorage.getItem('mot_tipo') || 'faturado';
+let form = {};
+let enviando = false;
+let configOk = false;
+
+function iniciarFirebase(){
+  try {
+    if(FIREBASE_CONFIG.apiKey === 'COLE_AQUI_SUA_API_KEY') {
+      configOk = false;
+      return;
+    }
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+    configOk = true;
+  } catch(e) {
+    console.error('Firebase erro:', e);
+    configOk = false;
+  }
+}
+
+function fmtMoney(v){
+  return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function render(){
+  const body = document.getElementById('app-body');
+
+  if(!configOk){
+    body.innerHTML = `<div class="config-needed">
+      <i class="ti ti-settings"></i>
+      <div style="font-size:18px;font-weight:700;color:var(--amber);margin-bottom:8px">Configuração necessária</div>
+      <div style="font-size:14px;color:var(--gray-4);line-height:1.6">
+        Adicione as credenciais do Firebase no arquivo <strong>motorista.html</strong>.<br>
+        Veja o README.md para instruções completas.
+      </div>
+    </div>`;
+    return;
+  }
+
+  let html = '';
+
+  // Seleção de motorista
+  html += `<div class="motorista-card">
+    <div class="motorista-label"><i class="ti ti-steering-wheel" style="font-size:12px"></i> Quem está registrando?</div>
+    <div class="motorista-grid">`;
+  MOTORISTAS.forEach((m,i) => {
+    html += `<button class="mot-btn ${motSelecionado===m?'sel':''}" onclick="selecionarMot('${m}')">
+      <i class="ti ti-user-circle" style="font-size:28px"></i>
+      <span>${m}</span>
+    </button>`;
+  });
+  html += `</div></div>`;
+
+  if(!motSelecionado){
+    html += `<div style="text-align:center;padding:20px;color:var(--gray-4);font-size:14px">
+      <i class="ti ti-arrow-up" style="display:block;font-size:24px;margin-bottom:6px"></i>
+      Selecione seu nome para continuar
+    </div>`;
+    body.innerHTML = html;
+    return;
+  }
+
+  // Formulário
+  html += `
+  <div id="alert-area"></div>
+
+  <div class="form-card">
+    <div class="form-title"><i class="ti ti-truck"></i> Dados do frete</div>
+
+    <div class="field">
+      <label>Data e hora do serviço</label>
+      <input type="datetime-local" id="f-datetime" value="${form.datetime||hojeLocal()}" onchange="sf('datetime',this.value)">
+    </div>
+
+    <div class="field">
+      <label>Serviço / Descrição <span style="color:var(--red)">*</span></label>
+      <textarea id="f-servico" rows="3" placeholder="Ex.: Transporte de GLP P45 — coleta em Itaúna, entrega em Divinópolis" onchange="sf('servico',this.value)">${form.servico||''}</textarea>
+    </div>
+
+    <div class="field-row">
+      <div class="field" style="margin-bottom:0">
+        <label>Origem <span style="color:var(--red)">*</span></label>
+        <input type="text" id="f-origem" placeholder="Cidade de coleta" value="${form.origem||''}" oninput="sf('origem',this.value)">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Destino <span style="color:var(--red)">*</span></label>
+        <input type="text" id="f-destino" placeholder="Cidade de entrega" value="${form.destino||''}" oninput="sf('destino',this.value)">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title"><i class="ti ti-currency-dollar"></i> Financeiro</div>
+
+    <div class="field">
+      <label>Valor do frete (R$) <span style="color:var(--red)">*</span></label>
+      <input type="number" id="f-valor" placeholder="0,00" value="${form.valor||''}" inputmode="decimal" oninput="sf('valor',this.value)" style="font-size:20px;font-weight:700">
+    </div>
+
+    <div class="field">
+      <label>Tipo de faturamento <span style="color:var(--red)">*</span></label>
+      <div class="tipo-row">
+        <button class="tipo-opt fat ${tipo==='faturado'?'sel':''}" onclick="setTipo('faturado')">
+          <i class="ti ti-file-dollar"></i>
+          Faturado
+        </button>
+        <button class="tipo-opt men ${tipo==='mensal'?'sel':''}" onclick="setTipo('mensal')">
+          <i class="ti ti-calendar-month"></i>
+          Mensal
+        </button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Placa do veículo</label>
+      <input type="text" id="f-placa" placeholder="ABC-1D23" value="${form.placa||''}" oninput="sf('placa',this.value.toUpperCase())" maxlength="8" style="text-transform:uppercase;letter-spacing:2px">
+    </div>
+
+    <div class="field">
+      <label>Observações</label>
+      <textarea id="f-obs" rows="2" placeholder="Informações adicionais..." onchange="sf('obs',this.value)">${form.obs||''}</textarea>
+    </div>
+  </div>
+
+  <button class="btn-submit" onclick="enviarFrete()" ${enviando?'disabled':''}>
+    ${enviando
+      ? '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Enviando...'
+      : '<i class="ti ti-send"></i> Enviar registro de frete'}
+  </button>`;
+
+  // Histórico do motorista
+  html += `<div class="hist-card" id="hist-container">
+    <div class="hist-title"><i class="ti ti-history" style="font-size:12px"></i> Seus últimos fretes</div>
+    <div id="hist-list" style="color:var(--gray-4);font-size:13px;text-align:center;padding:12px">Carregando...</div>
+  </div>`;
+
+  body.innerHTML = html;
+
+  // Carrega histórico
+  carregarHistorico();
+}
+
+function hojeLocal(){
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
+function sf(k,v){ form[k]=v; }
+function setTipo(t){ tipo=t; localStorage.setItem('mot_tipo',t); render(); }
+function selecionarMot(nome){ motSelecionado=nome; localStorage.setItem('mot_nome',nome); form={}; render(); }
+
+function mostrarSucesso(dados){
+  const body = document.getElementById('app-body');
+  body.innerHTML = `
+    <div class="success-card" style="display:block">
+      <div class="success-icon"><i class="ti ti-check"></i></div>
+      <div class="success-title">Frete registrado!</div>
+      <div class="success-sub">
+        <strong>${dados.servico||'Frete'}</strong><br>
+        ${dados.origem||''} → ${dados.destino||''}<br>
+        Valor: <strong>${fmtMoney(dados.valor)}</strong><br><br>
+        <span style="color:var(--gray-4);font-size:12px">O registro foi enviado e já aparece no sistema do Marco Tulio.</span>
+      </div>
+      <button class="btn-novo" onclick="form={};render()">
+        <i class="ti ti-plus"></i> Registrar outro frete
+      </button>
+    </div>`;
+  // Scroll para o topo
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function mostrarAlerta(msg){
+  const el = document.getElementById('alert-area');
+  if(el) el.innerHTML = `<div class="alert alert-err"><i class="ti ti-alert-circle"></i>${msg}</div>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function enviarFrete(){
+  if(enviando) return;
+  const f = form;
+
+  if(!motSelecionado){ mostrarAlerta('Selecione seu nome.'); return; }
+  if(!f.servico){ mostrarAlerta('Preencha a descrição do serviço.'); return; }
+  if(!f.origem){ mostrarAlerta('Preencha a origem.'); return; }
+  if(!f.destino){ mostrarAlerta('Preencha o destino.'); return; }
+  if(!f.valor||Number(f.valor)<=0){ mostrarAlerta('Preencha o valor do frete.'); return; }
+
+  enviando = true;
+  render();
+
+  const dados = {
+    motorista: motSelecionado,
+    servico: f.servico,
+    origem: f.origem,
+    destino: f.destino,
+    valor: Number(f.valor),
+    tipo: tipo,
+    placa: f.placa||'',
+    obs: f.obs||'',
+    datetime: f.datetime||hojeLocal(),
+    status: 'pendente',
+    criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  try {
+    await db.collection('fretes_motoristas').add(dados);
+    enviando = false;
+    form = {};
+    mostrarSucesso(dados);
+  } catch(e) {
+    enviando = false;
+    mostrarAlerta('Erro ao enviar. Verifique sua conexão: '+e.message);
+    render();
+  }
+}
+
+async function carregarHistorico(){
+  const el = document.getElementById('hist-list');
+  if(!el) return;
+  try {
+    const snap = await db.collection('fretes_motoristas')
+      .where('motorista','==',motSelecionado)
+      .orderBy('criadoEm','desc')
+      .limit(5)
+      .get();
+
+    if(snap.empty){ el.innerHTML='<span>Nenhum frete registrado ainda.</span>'; return; }
+
+    let h='';
+    snap.forEach(doc=>{
+      const d=doc.data();
+      const dt=d.datetime?d.datetime.slice(0,10).split('-').reverse().join('/'):'-';
+      const stMap={pendente:['st-pend','Aguardando'],aprovado:['st-aprov','Aprovado'],rejeitado:['st-rej','Rejeitado']};
+      const [stCls,stTxt]=stMap[d.status]||['st-pend','Pendente'];
+      h+=`<div class="hist-item">
+        <div class="hist-left">
+          <div class="hist-servico">${(d.servico||'').slice(0,45)}${(d.servico||'').length>45?'…':''}</div>
+          <div class="hist-meta">${dt} · ${d.origem||'-'} → ${d.destino||'-'}</div>
+        </div>
+        <div class="hist-right">
+          <div class="hist-valor">${fmtMoney(d.valor)}</div>
+          <span class="hist-status ${stCls}">${stTxt}</span>
+        </div>
+      </div>`;
+    });
+    el.innerHTML=h;
+  } catch(e){
+    if(el) el.innerHTML='<span style="color:var(--red)">Erro ao carregar histórico.</span>';
+  }
+}
+
+// Offline detection
+window.addEventListener('online', ()=>{ document.getElementById('offline-banner').classList.remove('show'); });
+window.addEventListener('offline', ()=>{ document.getElementById('offline-banner').classList.add('show'); });
+if(!navigator.onLine) document.getElementById('offline-banner').classList.add('show');
+
+// CSS spin animation
+const style=document.createElement('style');
+style.textContent='@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(style);
+
+// PWA service worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+
+// Init
+iniciarFirebase();
+render();
+</script>
+</body>
+</html>
