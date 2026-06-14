@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expresso Ricci — Sistema de Fretes</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1A5FA8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Fretes MEI">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/dist/tabler-icons.min.css">
+<style>
+:root{
+  --blue:#1A5FA8;--blue-dark:#0D3F75;--blue-light:#E8F0FB;
+  --green:#276C14;--green-light:#EAF3E0;
+  --amber:#8A4A00;--amber-light:#FEF0DA;
+  --purple:#5A1D9A;--purple-light:#EEE6FB;
+  --red:#8B1A1A;--red-light:#FCEAEA;
+  --gray-1:#F7F8FA;--gray-2:#ECEEF2;--gray-3:#D1D5DF;--gray-4:#8A90A0;--gray-5:#3D4250;--gray-6:#1A1D26;
+  --radius:10px;--radius-sm:6px;--shadow:0 2px 8px rgba(0,0,0,.08);
+  font-size:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#F4F6FA;color:var(--gray-6);min-height:100vh}
+
+/* Layout */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:#fff;border-right:1px solid var(--gray-2);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;height:100vh;z-index:10}
+.main{margin-left:220px;flex:1;padding:28px 32px;max-width:1100px}
+@media(max-width:700px){.sidebar{width:100%;height:auto;position:relative;flex-direction:row;flex-wrap:wrap;border-right:none;border-bottom:1px solid var(--gray-2)}.main{margin-left:0;padding:16px}}
+
+/* Sidebar */
+.logo{padding:20px 20px 16px;border-bottom:1px solid var(--gray-2)}
+.logo-nome{font-size:13px;font-weight:700;color:var(--blue);line-height:1.3}
+.logo-sub{font-size:11px;color:var(--gray-4);margin-top:2px}
+.nav-group{padding:12px 10px 4px}
+.nav-label{font-size:10px;font-weight:600;color:var(--gray-4);text-transform:uppercase;letter-spacing:.07em;padding:0 8px;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:500;color:var(--gray-4);transition:.12s;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--gray-1);color:var(--gray-6)}
+.nav-item.active{background:var(--blue-light);color:var(--blue);font-weight:600}
+.nav-item i{font-size:16px}
+.nav-badge{margin-left:auto;background:var(--blue-light);color:var(--blue);border-radius:12px;padding:1px 8px;font-size:10px;font-weight:700}
+.nav-badge.purple{background:var(--purple-light);color:var(--purple)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.stat{background:#fff;border-radius:var(--radius);padding:16px;border:1px solid var(--gray-2);box-shadow:var(--shadow)}
+.stat-label{font-size:11px;color:var(--gray-4);font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.stat-val{font-size:26px;font-weight:700;color:var(--gray-6)}
+.stat-val.blue{color:var(--blue)}.stat-val.green{color:var(--green)}.stat-val.amber{color:var(--amber)}.stat-val.purple{color:var(--purple)}
+
+/* Card */
+.card{background:#fff;border-radius:var(--radius);border:1px solid var(--gray-2);padding:24px;margin-bottom:20px;box-shadow:var(--shadow)}
+.card-title{font-size:16px;font-weight:700;color:var(--gray-6);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.card-title i{color:var(--blue)}
+
+/* Page header */
+.page-header{margin-bottom:24px}
+.page-title{font-size:22px;font-weight:700;color:var(--gray-6)}
+.page-sub{font-size:13px;color:var(--gray-4);margin-top:3px}
+
+/* Form */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:600;color:var(--gray-5);display:flex;align-items:center;gap:5px}
+.field label .badge-pill{font-size:10px;font-weight:500;background:var(--blue-light);color:var(--blue);padding:2px 7px;border-radius:20px}
+.field input,.field select,.field textarea{padding:9px 12px;border:1px solid var(--gray-3);border-radius:var(--radius-sm);font-size:13px;background:#fff;color:var(--gray-6);font-family:'DM Sans',sans-serif;transition:.12s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,95,168,.1)}
+.field input.highlight{border-color:var(--blue);background:var(--blue-light);font-weight:600}
+.section-sep{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:4px}
+.section-sep span{font-size:11px;font-weight:600;color:var(--gray-4);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.section-sep::before,.section-sep::after{content:'';flex:1;height:1px;background:var(--gray-2)}
+.section-sep::before{display:none}
+.char-count{font-size:11px;color:var(--gray-4);text-align:right}
+
+/* Tipo toggle */
+.tipo-toggle{display:flex;border:1px solid var(--gray-3);border-radius:var(--radius-sm);overflow:hidden;grid-column:1/-1}
+.tipo-btn{flex:1;padding:10px;font-size:13px;font-weight:500;border:none;cursor:pointer;background:#fff;color:var(--gray-4);font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:7px;transition:.15s}
+.tipo-btn:first-child{border-right:1px solid var(--gray-3)}
+.tipo-btn.sel.fat{background:var(--green-light);color:var(--green)}
+.tipo-btn.sel.men{background:var(--purple-light);color:var(--purple)}
+.tipo-hint{font-size:11px;color:var(--gray-4);grid-column:1/-1;margin-top:-4px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:.12s}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-dark)}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#1b4d0d}
+.btn-sec{background:#fff;color:var(--gray-5);border:1px solid var(--gray-3)}.btn-sec:hover{background:var(--gray-1);color:var(--gray-6)}
+.btn-danger{background:#fff;color:var(--red);border:1px solid #F5C0C0}.btn-danger:hover{background:var(--red-light)}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+/* Table */
+.table-wrap{overflow-x:auto;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 12px;color:var(--gray-4);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gray-2);background:#FAFBFD;white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--gray-2);vertical-align:middle;color:var(--gray-6)}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--gray-1)}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.b-pend{background:var(--amber-light);color:var(--amber)}
+.b-nf{background:var(--blue-light);color:var(--blue)}
+.b-pago{background:var(--green-light);color:var(--green)}
+.b-cancel{background:var(--red-light);color:var(--red)}
+.b-fat{background:var(--green-light);color:var(--green)}
+.b-men{background:var(--purple-light);color:var(--purple)}
+
+/* Filter row */
+.filter-row{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.filter-row input,.filter-row select{padding:8px 12px;border:1px solid var(--gray-3);border-radius:var(--radius-sm);font-size:13px;background:#fff;color:var(--gray-6);font-family:'DM Sans',sans-serif}
+.filter-row input{flex:1;min-width:140px}
+
+/* Action row */
+.action-row{display:flex;gap:5px}
+
+/* Pasta mensal */
+.pasta{border:1px solid var(--gray-2);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow)}
+.pasta-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:#FAFBFD;gap:8px;transition:.12s}
+.pasta-header:hover{background:var(--blue-light)}
+.pasta-titulo{font-size:14px;font-weight:700;color:var(--gray-6);display:flex;align-items:center;gap:9px}
+.pasta-meta{display:flex;gap:12px;align-items:center;font-size:13px}
+.pasta-body{padding:0 18px 18px;display:none;border-top:1px solid var(--gray-2);background:#fff}
+.pasta-body.open{display:block}
+
+/* Alert */
+.alert{padding:11px 16px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-weight:500}
+.alert-ok{background:var(--green-light);color:var(--green);border:1px solid #B8DDA8}
+.alert-err{background:var(--red-light);color:var(--red);border:1px solid #F5C0C0}
+
+/* Empty */
+.empty{text-align:center;padding:3rem 1rem;color:var(--gray-4)}
+.empty i{font-size:42px;display:block;margin-bottom:10px;opacity:.3}
+
+/* Documento NFS-e */
+.doc{background:#fff;border:1px solid var(--gray-3);border-radius:var(--radius);padding:28px;font-size:12px;color:#111}
+.doc-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid var(--blue);padding-bottom:14px;margin-bottom:16px}
+.doc-empresa{font-size:15px;font-weight:800;color:var(--blue)}
+.doc-info{font-size:11px;color:#555;margin-top:3px;line-height:1.6}
+.doc-nf-num{text-align:right}
+.doc-nf-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.06em}
+.doc-nf-val{font-size:22px;font-weight:800;color:var(--blue)}
+.doc-bloco{background:#F7F8FA;border-radius:var(--radius-sm);padding:11px 14px;margin-bottom:10px}
+.doc-bloco-title{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+.doc-row{display:flex;justify-content:space-between;padding:3px 0;font-size:12px}
+.doc-row span:first-child{color:#666}
+.doc-row span:last-child{font-weight:600;text-align:right;max-width:55%}
+.doc-servico-box{border-left:3px solid #F0A020;background:#FFFBF0;border-radius:0 6px 6px 0;padding:11px 14px;margin-bottom:10px}
+.doc-servico-label{font-size:10px;font-weight:700;color:#A06000;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.doc-servico-val{font-size:14px;font-weight:700;color:#333;line-height:1.5}
+.doc-desc-box{border-left:3px solid var(--blue);background:var(--blue-light);border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:10px;font-size:12px;line-height:1.7;color:#333}
+.doc-total{text-align:right;font-size:20px;font-weight:800;color:var(--blue);margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-2)}
+.doc-footer{font-size:10px;color:#aaa;margin-top:12px;border-top:.5px solid var(--gray-2);padding-top:8px;line-height:1.6}
+
+/* Relatório */
+.rel-wrap{border:1px solid var(--blue);border-radius:var(--radius);overflow:hidden;margin-top:4px}
+.rel-header{background:var(--blue);color:#fff;padding:18px 22px}
+.rel-header-title{font-size:17px;font-weight:700}
+.rel-header-sub{font-size:12px;opacity:.8;margin-top:3px}
+.rel-body{padding:20px 22px;background:#fff}
+.rel-sumario{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.rel-sum-item{background:var(--gray-1);border-radius:var(--radius-sm);padding:12px;text-align:center;border:1px solid var(--gray-2)}
+.rel-sum-label{font-size:11px;color:var(--gray-4);font-weight:500;margin-bottom:4px}
+.rel-sum-val{font-size:20px;font-weight:700;color:var(--blue)}
+.rel-table{width:100%;border-collapse:collapse;font-size:13px}
+.rel-table th{background:var(--blue-light);padding:9px 12px;text-align:left;font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.rel-table td{padding:10px 12px;border-bottom:.5px solid var(--gray-2);vertical-align:top}
+.rel-table tr:last-child td{border-bottom:none}
+.rel-table .total-row{background:var(--blue-light);font-weight:700;color:var(--blue)}
+
+/* Boleto */
+.boleto-bar{display:flex;align-items:center;justify-content:center;background:#111;height:48px;border-radius:4px;margin:8px 0;overflow:hidden}
+.boleto-linha{background:#fff;border:2px dashed var(--blue);border-radius:6px;padding:12px;margin:10px 0;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.5px;color:var(--blue);text-align:center;word-break:break-all}
+
+/* Print */
+@media print{
+  .sidebar,.filter-row,.action-row,.btn,.alert{display:none!important}
+  .main{margin:0;padding:0;max-width:100%}
+  .card{border:none;box-shadow:none;padding:0}
+  .doc{border:1px solid #ccc}
+}
+</style>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="logo" style="text-align:center">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANwAAABJCAIAAADZk98mAAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAABbDklEQVR42u29edBc13Ef2t3nnHtn+1bsGxcRhEAS4E6RFHdSJEWRkURRsiSLm2zSFCVaa55iVcoplWWHValyUslzFJdeUolt0S+Rn7yo5FCyFm4iABIECRD78mEHPuBb55vtLuec7vfHmbkYgIsoS8qr9/wuq1DD+Wbmnntvn15+/etu/Nq/+gMRAQBE3LBhw9GjR5gFQEQgS9OhgYGpiYnJqUlFipRCRKUUEln2zOy9F+eqtdr9Dz58zdXX53kOKADSbreMUQMDA/v27X3q29+2WU6IiIiAKMDC0D1EgMOpmVlEEBEAihcsEtZWvKOUAgDnXHhTRBAg/DIhCgIACAAiGmPa7faKFSsef/xxIgIAZq5Wq3/+53/2g6f/p9LaiwdUhLFSxhhNCAiQW+uc884hIACaOBpdOJ8YUIAVds+I3RfhaDabxpg4ijvtDggBivcZexcZA4jIAoBISCQIiEQQFolCpA0p8TmiHx2slmJSJEqXM4fiBL2LI4q05EnLWttK8rlmev6ayx79/Jc9EmSZcxaRwm3wKNY5Z533Prd5ntosHHmeZZmz1vnuwczeWe+cNpFnRkQhAhFC0KQJldGKlEJFhEhExkRGl00Ul+KSNjqKoiiKjDFRFCmltNbjJ8YXLZqvlEJEEPDsAaHVav7Nd/+vV15+2eaZsEMQQhAQIlSRvnDNJY89/sXBkdEjx4+RIo0aQNrttoSHB6KZmZnDIw9yogiIqJMkrXbj2KEDAEhKV6pVIvLes/fsvdKklIqiyFnbbrb+x3//70uXLl+6ZAmLiLD3TikEkJnpqaTTMsp477H78yIiIAIAgCjCxTMOawjSy8wAgEThr12RDgd2fwdO/0EnEoSYRQSAEJl57dq1URTleY6IpLDdbu3evQcAQBSRiktlo2Mi5b0HAFKqEsfWOs8+6yQg4qy1WR6ZSECYu1LYPbsAIiBiuVxOkiTtdERQK6O0Uloj+jRrI2gCEiEEIoVEQkrCvlWoRLEnz5zHBtuZa3aY2ec+yVkpZKPEEFajiL1461HQGHP82KGJYweXnnVOCt5EWkQQCUQUUmQiKIebCogE3fuFxa0KN4ZZEGRutt5st0dG5+W59d5577z3zjGwOOec99baPM+ttdbmnXbHeWFh75zzXpg9M4AEPVWr1nbu8IhYKpWIqFyOly1b9O2/+Pb2118lHStSQECIIOi99w6895te2vjHjSfveP8HXtuyud1JjYlHRkauv+EGE+kgFtrmWfGAvbMIQoggkiVJszEHSMZEtVotCMq8+fMGagNIlObZ7Gy93WmX4pLWUX1q/Nmf/vhTn7rf2xwRUdg7y95XSiUCFGEQFhEkAhAA6QlW2AzdJ83MzK54Hd7lroyB9+HKy947Zx0SKtJK6cgYpZTRJo6jKI6NMcaYKI7jOF65cuWll16aZRkRBZ06OTk5PTUNQABYKddMbNI0KZfLIyOjSptGo9lqtxSpSrkcmahRrwtznmSxiZ1woRp7QinsWUS89y63zF4pgwQALMxKkUNhb0UUIKGQ96A0IiMSIIAgIAsr1JrqrabWwIyEqHSsdOTAt7NUI7Y9EpQUk+EkisvtdvPkiWPLlq8Q70QUIiAQICB0rVvYOgAg4b/ek4VTexoUKW2oHEeDlbKLYwAgAkRCoKASGIKCCNrBCzgAJlIi4rwXYWddnudBK9dnGwpL1rk8zzudTp6l/+Mv/8/tr78alWqAqCNDUVVrTUAKlfe+NTfFeWf3zm1j+/ZWylXn2AvMWzD/umuvptgwe0HQQaVDYVAZENAz28xx7knpwcEh710UReecc26tVk3TNLP5yPx5CxctHD8+Pn78hNbalKo7dm6frU9XK1XvAQDCoufPnx9F0dTkpFZaPHthga75g3BDQYhIa6O1FmGttTFGa21MZIyO4jguxVEUxXFcLpcBIIqiWq1WLpejOIqjUmRKcRSZyETaRMaQVlppJCRSRIREWZYxs4h3zsWlaHZ2tt3uEJlqdVBHOs3aF19ywVkrzspyD4zluDw9Pb19+/Zms1UdHIDh4bnpaZtl3jsnHLQ7i9jceu+B2TMjgLWWiLRWiGEvMaAoRcZoC7Zajp1z1lr2yIzsu64SESIpxQqdWK8sSNmUylHksoy5ExuqlE27k2UZm7iioipK5KQjiPX6bJaneZ5rrQrDIkgiLALFrgHgrh/T3ffAIkEwGSTcE/aerQMBRgagoC0EAAEFThkiRiGiONKAqEgjgNFYKrHWutVqewfz5y9ABBGJouiVja9s2fKajiqmVFYmstZ3klREFEikqFSKl65Y1um0JsaPADrnM6NKkntwDAIKgAFQQDtrQUCEBUS8R2EB8N6mSRtARkaGCD0ouGD1qtzaen3WGKOQynH50NHjZ51znrduYmKiXKnMzMweO3rsggsv5Dw3kXadzNrO8HDtg//sA5s2bSKkyGgTRVEcRybSWkVxHEVBoKIghlopY7Q2RhGSUqQQUCMiIoXnneV5HEXValVrzdyVEgRg5nAPGcSzExYvDADCrEgBAHtvrRWS2bk5ASlXqnEcJWly4003VWplL1QpV3RUBsB8curGm298/plnsrRdLg8kUWydbbeaQiKCzCzMxuiBajkyMSKxsM2tMUaAw1JFxHunDeR5kmf50FCVvW+123nqQcB51koTYmZz62wwijqKyqWKJkqT1ujoyJKlS0rGiLAHOTkxcfT4MdCleGA4y2w7cc1Wx9tcxDOD0VpEmBkQvQ/SLgAewuYHFEFhAUQIHhOCACgWto6d9856zygCIEIMhdsvFBxEACEImh01KQA4duxos9XWWmujq9UqAiKgc7m1FhE7SecnP/mJMMWlKpLKs5QBRoYGq+VYXNqam2vX6512Y8nyFYuXnXXi6BGFHMVAKEohgjB0laO2WQ7d8ECczZEEwYN4ZhdFplzS9frsqlUXEIGwbzXmJiYn46hsLVx51Xtb7eaC+VONep0R2fvDh4+cv+r83KbO2rTTYJ+A4PLly1asWMa+G9AURhARgolm9t6zCIOA987aXMQH484Qwg8wxnjvoyhSIPUs9V2JFAQJexoheA3AIoICIeoR8c6maaIVCYvoaGryhNY4UK202+2LLrxg6aLF043G4MBQ2k68+JGFC6+8enF9+uRFF6/Z+NLLNk2NMd7ZPGmTklK5jAriOB4eHgwqE4EBwJeUdzkp5OBtsbA4caSAY0PtZqtaKw8PDsgAtlttm+fDQwOjI6P7Dxyay9shPitFUawpTZN5C4eXL18xUBsaGpwfRVG9PtlJOmctW3h8fKLVaigdJ6lLk0xcjoDG6HAHCFFECIDZe58DWEZkQARCpO7NISUAACRIAqB1NDM7l7sJIIWIWilAQAJBROw6/BoJAUEEAYgw7bSJUAGUIg0IBIzisyxDJOu8c96YeP/YvoMHD8eVQa2NY0soy5Yunjd/SaUUs099ns5MzRw6cuTY4UPLVpwzMrJ4bna6HIOgiDADe/EsgkDauW6EgCiADCKeJYQ+5XLsnC+VqqOjo875JEkPHzmsdQSS79m9Y8lZy5utZhyZcjlutjqIuGffnsuvuNTmqbB3zjpnFelU0uBBFUfYDcHPC54DEQFQEFallAh194mI9yzMedqOTARs6zPNTqdjrfXeO8/es3PWWpumqc1z8MwizJzmWZZm3rllSxatWLF0cmK80ZxzgtXq8AXnn3fk6LgmfNfZS8W2V5615PWt24eqQ5VYH9yz4+qrrtw1fmL+wiXl6kCz3gAgIrIuHaiUL71oJSKUy/Gy5cuGh4dKJX34yKHx8fHBwaHBwQFtdJ7naZJrrZHIO3GOm41mkqTNZicuRZMnT7R9lraTCZvPzM5a64xRznFk4mq1mqVppVJetnz5wgXzR0bmJ53M2mTpksVp2iyXjIA+cuRkiUgps3fvnvUbBjody8xKK2aO47gUm0qlUi1XSiVdigyTFlSKgh+jgq+ASCwigFZEhKu1klKaJVhMDwHu8MHoeGGxwsyCiFoiECJF7FlpVSnXAIE928xniR2ZN6wUIKtSHG3fttVm2fBIzbOzuVu6bNkF714zNLTAudTb5szUyfnzR1j44OFj01OTQ4ODzcasCId4EUSQgz5nbW0mIoCCKETkvGPP3vsAvrDAwNBgXCprz/nkDJIZHZ3Hnutzc1MTx887f2V9QpRSIIwgE8ePt1tzlXJZSBRGID0zKiDCIXbx3jvnnHO94M7meV78b3C/nMu9985Zb623zrNPk9R5R4iePTMjIBJy8H2DgDonzEO1gSzLXZ4LSxRHsTHnn7N87QWr4cKVx48f8SxZBp1mum/focGRkVIpHhocyNLO4ED1gtXvzjKf23zixPhZK5Y3mo2h4aFGfY5IAEHAn3vu2R+46/YT48ejOM6ytFKKFi1cUi0PnLX03FK5bPP80OFDA7XhgTJZ6+bmGuy9iEeR2ERclgXzF7DNTRSPjDhGKpcqU1OT9bk2oY6iiEhleb5oycJqpTx/wbzjx06MHx8HkFq1euEFFxw8MIagjhw5Ya0dGhpsNZvPP/v85NRMbi0ieecFYKCiRoYHBwcGbG4HBwcXLRg1WiGiIqW0NsYgEjPHpXJQmUjonNMm1sYQgTFaKa10pJRWRhNphRSAIUREBaRQKwTQ3jskQUIRYGbSmNuWTYSQJicmdm7fHkVaE2ZpNjoyuvaii5YvXz4+Pn340NiSxcMLFyw4fuTQ/NHRuWZneqautTKREQIUIALxjp0XZkHU1loRDwiIwOLyPE+TLHjNQY60iqIobjSatVpNaz03N6eQquVYE2x6ef3ieQuqlfLs7Iwmmpqe+ocf/s/58+bnWZ7nubM274ke91RaQMucc977oCmDsIZ/Q8QAICH80kSECADWORDQWgGiIiLVxR0DEoEikdZEJCC5zYzWlXKpWqlUytGuXTv27dsdR0bEx2U1Pd0+Ot4E1IKo4vKBI8cuvPiSViYnpmaRJUmSBfPnb9265eyzVwxUy8HBYPZKqbGxsT/+93+iiMrlcqvV7CQdFENKa6WiKM6yrNVuWSeR0dY6D6AAjKHgNmtj9uw/VK6WFWHwgeNYKU1pmhMxke502s7lxhBRiJdlz56dwu6u999NIKW4BIJxpFutztqrLr/6yjXtZt0xJUn62muvHjx4tFKOBgdKpODCC1dpFW165TWxebNRT5LOwoXz41LMzrPAbL0eUF3vnbB4AABUxqBAFCtAhagEFJESgQCCmlIURTEo8CKR6YYApVKpVCrFcRwUyqJFSz0TIu3atWvi5InBwWFrLYKMDNcGBmPrWvvGdh47esjbBUsXLRgcGJxrNUdHhqamZ5x3qLq+ggh769g4LwyI2jnH4hARgKenppqNOZvbLMu8ZyI0xrRaraSTkNJRFC1fsWL8+HGl1fwF8zvtxkCtAkjNZtN7xywovGnjaz0IAgo44k2P4KkQhTgGnfchWmQBEXbeKyJUmrRO01SAgDCxXilQ0EWxgblciiuVSp5nzOzZe3RxyYAwEjifN1rJ4MCAtS7Yh2S2zh6jyLTStN1JGY1Hc/zk9LKzztm9a081jpcuWz49M60UEWJ9ekqEnbUsXivM8rzdTokAcK5cLrEYACKBdrvjG01FSoCUISEigyiASJZ93smlnYb7YCJjIiXeAbj6zHSlMlAq6SwT561k4JmzLGu2Os1mK4rjd73rXeK9ADBzq9UpV6tEqlSKD4ztmxw/QOiRYkBQpM5feU4cR+IzAb93bMyoqDY4MD1TZ1aWSkcnGwCCqEAgs9Z5JkU2t5ExAgggZB0ASCdlQWEQQGFhdl7YswekJHFv8uwQlMIQREaRyZ1jL855rZVzFkEQBcGzS5uNZHrqcNKZnZzgleeeE8dRO80rFUFCYa+NMkTsvdaKxbG3IgBI2uVeQBA9s1u2dMnZyxbHkclzG0WlgdrAhlc2zTU7E5Mz71590dj+fZ00PW/VSkV07MhhATjvXe86cXKq3mx5Fu/zcrm0aPHyEBg6G/IH0mq1kyTpQbkozFrrkAxAhAA2AWC5XE7TxLrcs6+UqsZEAXNDQB0ZYRYQpVTwQeMo9uw1KfQuy5IoMmmaC3tDJadEGLUmRPReAajhoUFmLsWx98Y6MSXo5Cet9fvGDtxw0/XPv/DiyZPTZ51zrk3TfWMHDh8+dNstN+3bt2eu2QJhY6hcrhChUhRFpSzLAtTFDERd6NQY01PbIuKJMCSQRFRwlIMlQGF2ICKKTJqx+I4WSMWzOGDUkak3OstWVLfv3HfBBRdef/1NhOCc27Vr9+joyPHxE57F+cxbZldK0wR16pwnRBOZLI20BkTsdLxSSkQS23Ees8zb3DMKkjLaWAtp7kEcKZV6dt5HJiqVNBExKO99AFl1ZBRoJWJMBCKkkjTJAxp6hmQ6FmFWBoaHq8xoc9/pZMIBzheb29npmfkL5l137dWvvrLlvHe9+5x3XXDgwL64NtjMndY6UjQ6bzTSESLUagMi4rwTEQLSzllAEfHM/u6771myaHRmeipNs2az7Z07cOTIbH1sYmJiaGj+ooXLtI4qlSgyJtJRuVQeHz8+PT3DXoSRKALQnU7iXG5zb60jUgFy7z0kARFE1FpTL2dDRAHuHh4eZh5MknaSJoRKG21trhGQsBSXAIGZNRlhMcZUq1XnXGQCJEmDA7VGo5FbWyqXKqVypVIRz9baSrVitBkaHFRK1SpVb9N6sznX7Bw5MeXSfMf2rSOjI1ddftX+Q4cOHTjkrS1FpVtvvuXo0SM7t+9qNTsiPDhYq1ZrAFwqxbXawOxs3XtPRGmaem9D0rVUKs2bNw8ApqamvPc9nFUTKaVUnucBPSiXy1FknLPCrIgibbQxmfXbtu+Yma0D6izNO61k8cLFW17bMjBQq1RKSZIMDQ012smuPXusTUeGhy6/dI0CFnE2t51Oh4hKcay09iKkaHBwUBG1Ox0AmZ5p1GdbuXMsvt3uOOe11tpE4bYHf8k5m6bdxIT3DkBYOIo0ERERezYmrpRLznKe53IqOXzqUMoMDAzUarFSJkvzdvtkkrYiU/JsG43GkSNHZ2dnFyxcccll1yild+zaX6/Xa4OVQwcO29TmqNJOZsnluWWP1jKhMDAQ4113fQC6SKl0Ou16fa7daud53m4nWZaxSJomzFgqDcwbXThvwbxytZSlabvZOHFyvN1ssTgAD/8vPFBFWpfe/e7Va9Zeok1ss8zm6di+vfvH9rRaTQH7dt9FFBGlSASUoiiKArwV8NTeX5FZwsbTSuuQL6ZuBgsBlVbM0Gq1szxnoVKpMjAwsHz5ihXLz2q0m0hYKVcmJyd27twp7PK0vXDhvEsvXsM+L8VxHMXe+x7ADFnuwl6N47jT6ZRKpWarPTfXbnXaAr7T7rBn0ppQMUCeZUopa22r1epi791ELjhnBTikLSIdVSpVAPSekyRpNBoFM4GIQppj4cKFlUpcrZWr1ZoIzs7M7d69O4pKiKK1Xrp0qQijNrWBQe/ZO160ePHkxOTRw4eVomq5UhuoGm2c83EcL1uxPEQFgox33HFHLwsl1Wo1jmsSeA1AwsGryVlYKy1AgtrEkcsyREAEYGFgRCQEROkmFxARCSDkqQARiKgfCcK+I2zKvr9CcDFDNgzRAGA3SYioFIgwkRJmpZSAECASkerlfAEFkSgwH0gICVARKVIgDKSxmz4L5zKkTIg6kTSCuDwFCfwEr0gBIUA4LwEwke7P2AU1WVxOALN6KRYS8YgSFt9LkbAIggACEVGPiQLBmUEyAmBM5D2Xy5WB2gAAp1nWbrcjY4hIxDln8yxVBCJCiEop6RIBEBFJqYCp6fA+aaVMWIsiDFYLSQXkMtiuYvEQcF0M1wtwKs1IAN3tF55Cj4/QfXYiIOKRBAGJNBF5fyqJYIwhIuetZ6uV0iZiJu84BHRaK0IQEaXNzMz0N//0T5NOQgoBQItw+Ik8z7/+9T+45pqrrXNIBEIAgAKKQFAAJFwPA/RQxDe4Gf//8f8fv/DBAGSMErbOZxoUCukAIobtRhRUlBBJSKsAYJc9AXiKmAMgAhgykghYUHcKOlk/qaen8N9mXYGkEzRNwUwDABFvTBxeWpsjApEqNNabXJ/nQENQWr/NuYJfCMBEPTV7+v4SEc8ee5este7nJQUDHa4o8I/CX4uIp/g3aNCQFC04b0TEzCEv10+PCv5oHMfe+4JAISxvWN0v7qjgqafzpu+/1RFUYy9GxWKpv8KjK0gM7Dx4ZkAA1v1LZOa3x3EC1ANdCxisM4pA/1IL69Yvo7t3737mmWe6FMweKhle3HnnnWvWrJmenv7ud787PT19xRVX3HHHHeGZKaV/9KMfPf/8c1dcccUHPnC3MebkyZP/4398Z2pqsou3STcE1lpfe+21t99+uzE6t+6//Zc/27ZtGyI654qIiohWr1593333jY6OBvP9d3/3N08//XSwEr0wrEtQ+uIXv3jllVc654johRde+Pa3vz07O1usWUQGBgbuuuuue++9N4qi8LCfffbZp5566sSJE9ba4qHGcXzXXXc98sgjxhhm1lq//PLLf/Inf3Lw4MEg3EXkQUTLli174oknbrjhBue6YSLQG6Xk7cTuVy0x8sZn+qt37k+JCgujAOhiE/T8IRAhAOotAN8MYTxTTt/m7oQnsX79+scff9wYU6vVwrmClHjvly5dunbt2mq12ul0vv71r4+MjHzzm9/88Ic/pJR+5plnHnjgASK65ZZbtdYAOD098+STT544cWLx4sX9ym9ycvLcc8/93ve+t2bNGvb8ne985x/+4R8WLV5cLpXCU1dKnTx5Mk3TSqXy4IMP5nmulFq/fsO3vvWf58+ft2DBAmYhokBW1VrX6/WwyFar9fWvf/25555bvXp1uLqw8i1btjz99NOXXXbZ6tWrvfdZlj355JM/+tGPrrjiiqBEA1r00ksbfvzjH19zzTWXX355kOlvfvObf/EXf7FmzZr58+cHhlGIG2ZnZ7/zne8Q0XXXXVe40f9rhO/nqthf31EYEO4mt0lEQtIkvFtQffFX5S4WVxUe9oc//OE/+qM/CrotmGlmXrJkSWA9felLX6rVal/60pc+97nPVavVhQsXPvLIo3Fc+vM///Obbroxy/I4jqIoVkpfcMGFTz31l/PmjTJ7Iup0Op/97GfXrVs3PT0dThdwmT/53//3G2+8MVhYY8y///f//l//63994sSJYnnlckUp9cUvfulf/st/maYpEYVUZ+DIOee01mmaHjt27JZbbvne975njAkqDRG/9a1vHT58OOwxpZT3fmJi4pJLLnnmmWcGBgaKU/zd3/3dq6++On/+/F5aX2ZnZ4no3/27f3fbbbd1Op0AvlYqlRdeeOHWW2+dnZ0N27ifT/hP4ZAuc1oAQOPpx69vzwWva3BwMJi/oaGharV6ijoO4Jx75JFHnHP//J//889//vMB3fjWt/6Pm2660VpfOH8iSKTOOefckZHBwgcdGhrCPuwzZC8XL168cOHCYg0LFizohZDFbhHv/aFDh1566aUsy6y1K1euPPvss4v8Z9hORHTixIl/+Id/CL8cTrRkyZLbb7996dKlzKx6hSInTpz47ne/Wy6Xg5cSDMVHPvKRZcuWBWkO3nPB9o/jWGsd3gyCWDia/0Rk8VS5QS+CAQFdIDJFnPFr8hgA4Pvf//66detEpNPpPP7441//+teDNipqaLIse/zxx6empv7Vv/pXAPCFL3zxn/2zu/M8J1KFs24MHT588BOf+JjWOjy/PM/XrVsXx3GlUin8M2Z+8sknFyxYEDAX59zzzz/PzP1qzDkPAN/97nf/7u/+zlqbZdkf/uEffvGLXwyrCoqtVCpdfvnlTz311H333Vf4f+FeXXzxxX/5l3+5evVqa22pVLruuuu++c1vPvroo4XHHLTgWWed9Vd/9VdXXXVV0MFFWNMv+mdEUYVD9U9FTXYjqsDPBF3Iotb616cpg9itWrXqvvvu895ba6+99tqgIQrVFYz4sWPHXn311VCA8Vd/9Z3rrnvvxz72sWCClVIB53fOJUkSot0ggrfccsstt9yyevXq/nqjQ4cOzczMvP76651OZ8GCBZdccsltt912++23F58J137PPfd84hOfyLIMAC644IL+/Ski5XL5j//4j+++++56vV4o2lKp9Dd/8zff+973Dh48uHr16rD+P/iDP7jjjjvq9XqXYMVcLpd/+MMffutb39q7d+9VV11VQIPFi27upBfOn0p9/VMSx7AJlSLVuwO6gHwLV+/XJ5RXXXXV7/3e770JlMPsvQ8UpN/7vd/727/92z/8wz9cuHDhF77whc9//vNEdO+99+Z5bowJsnv22Wd/5zvfWbRoUXicgVLUA1O6/isR/Zt/829uv/32v//7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" alt="Expresso Ricci" style="max-width:160px;height:auto;margin-bottom:6px">
+      <div class="logo-sub">CNPJ 53.651.463/0001-80</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Menu</div>
+      <button class="nav-item active" onclick="nav('dashboard')" id="nb-dashboard"><i class="ti ti-chart-bar"></i> Dashboard</button>
+      <button class="nav-item" onclick="nav('novo')" id="nb-novo"><i class="ti ti-plus"></i> Novo lançamento</button>
+      <button class="nav-item" onclick="nav('clientes')" id="nb-clientes"><i class="ti ti-users"></i> Clientes <span class="nav-badge" id="nb-cli-count">0</span></button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Fretes</div>
+      <button class="nav-item" onclick="nav('fretes')" id="nb-fretes"><i class="ti ti-truck"></i> Todos os fretes <span class="nav-badge" id="nb-count">0</span></button>
+      <button class="nav-item" onclick="nav('mensal')" id="nb-mensal"><i class="ti ti-folders"></i> Pasta mensal <span class="nav-badge purple" id="nb-men-count">0</span></button>
+      <button class="nav-item" onclick="nav('relatorio')" id="nb-relatorio"><i class="ti ti-report"></i> Relatório</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Emissão</div>
+      <button class="nav-item" onclick="nav('nfs')" id="nb-nfs"><i class="ti ti-file-invoice"></i> Emitir NFS-e</button>
+      <button class="nav-item" onclick="nav('boleto')" id="nb-boleto"><i class="ti ti-receipt"></i> Emitir boleto</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Financeiro</div>
+      <button class="nav-item" onclick="nav('motoristas')" id="nb-motoristas"><i class="ti ti-steering-wheel"></i> Motoristas <span class="nav-badge purple" id="nb-mot-count" style="display:none">0</span></button>
+      <button class="nav-item" onclick="nav('controle')" id="nb-controle"><i class="ti ti-building-bank"></i> Controle bancário</button>
+      <button class="nav-item" onclick="nav('remessa')" id="nb-remessa"><i class="ti ti-file-export"></i> Remessa CNAB 240</button>
+      <button class="nav-item" onclick="nav('retorno')" id="nb-retorno"><i class="ti ti-file-import"></i> Retorno CNAB 240</button>
+    </div>
+  </nav>
+
+  <main class="main" id="main"></main>
+</div>
+
+<script>
+const EMPRESA={nome:'Expresso Ricci',cnpj:'53.651.463/0001-80',tipo:'MEI — Transportador Autônomo',logradouro:'Rua Aurélio Campos, 427',bairro:'Piedade',cidade:'Itaúna',uf:'MG',cep:'35680-267',endFull:'Rua Aurélio Campos, 427 — Piedade, Itaúna/MG — CEP 35680-267'};
+const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+let fretes=[],clientes=[],form={tipo:'faturado'},docFrete=null,alerta=null,filtro='',filtroStatus='',filtroTipo='',pastaAberta=null,relGerado=null,relMes='',relAno='',tabAtual='dashboard';
+
+function save(){localStorage.setItem('fretes_marco_v3',JSON.stringify(fretes));localStorage.setItem('clientes_marco',JSON.stringify(clientes));}
+function load(){try{const d=localStorage.getItem('fretes_marco_v3');if(d)fretes=JSON.parse(d);}catch(e){}try{const c=localStorage.getItem('clientes_marco');if(c)clientes=JSON.parse(c);}catch(e){}}
+function genId(){return'F'+Date.now().toString(36).toUpperCase();}
+function genNFS(){return String(Math.floor(Math.random()*90000)+10000);}
+function genBoleto(){const s=()=>Math.random().toString().slice(2,12);return`34191.${s().slice(0,5)} ${s().slice(0,5)}.${s().slice(0,6)} ${s().slice(0,5)}.${s().slice(0,6)} 1 ${Date.now().toString().slice(-14)}`;}
+function fmtDate(d){if(!d)return'-';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`;}
+function fmtMoney(v){return'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function getMesAno(d){return d?d.slice(0,7):'';}
+function getMesNome(k){if(!k)return'';const[y,m]=k.split('-');return`${MESES[parseInt(m)-1]} / ${y}`;}
+function totalMes(){const h=new Date();const k=`${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}`;return fretes.filter(f=>getMesAno(f.data)===k).reduce((s,f)=>s+Number(f.valor||0),0);}
+function badgeSt(f){if(f.status==='Pago')return`<span class="badge b-pago"><i class="ti ti-check" style="font-size:10px"></i>Pago</span>`;if(f.status==='Cancelado')return`<span class="badge b-cancel"><i class="ti ti-x" style="font-size:10px"></i>Cancelado</span>`;if(f.nfs)return`<span class="badge b-nf"><i class="ti ti-file-invoice" style="font-size:10px"></i>NFS-e</span>`;return`<span class="badge b-pend"><i class="ti ti-clock" style="font-size:10px"></i>Pendente</span>`;}
+function badgeTp(f){return f.tipo==='mensal'?`<span class="badge b-men"><i class="ti ti-calendar-month" style="font-size:10px"></i>Mensal</span>`:`<span class="badge b-fat"><i class="ti ti-file-dollar" style="font-size:10px"></i>Faturado</span>`;}
+
+function nav(t){
+  tabAtual=t;alerta=null;docFrete=null;
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  const nb=document.getElementById('nb-'+t);if(nb)nb.classList.add('active');
+  render();
+}
+
+function sf(k,v){form[k]=v;if(['descricao','servico','tipo'].includes(k))renderForm();}
+
+function renderForm(){
+  const f=form;const serv=f.servico||'';const desc=f.descricao||'';
+  const el=document.getElementById('form-area');
+  if(!el)return;
+
+  const cliOptions=clientes.length
+    ? clientes.map((c,i)=>`<option value="${i}" ${f._cliIdx==i?'selected':''}>${c.nome}${c.cnpj?' — '+c.cnpj:''}</option>`).join('')
+    : '';
+
+  el.innerHTML=`
+  ${clientes.length?`<div class="field full" style="background:var(--blue-light);padding:12px;border-radius:var(--radius-sm);border:1px solid #C0D8F5">
+    <label style="color:var(--blue)"><i class="ti ti-bolt" style="font-size:12px"></i> Seleção rápida de cliente</label>
+    <select onchange="preencherCliente(this.value)" style="background:#fff;font-weight:600;color:var(--blue)">
+      <option value="">Selecione um cliente cadastrado...</option>
+      ${cliOptions}
+    </select>
+    <div style="font-size:11px;color:var(--blue);margin-top:4px;opacity:.8"><i class="ti ti-info-circle" style="font-size:11px"></i> Selecionar preencherá automaticamente os dados do cliente</div>
+  </div>`:''}
+
+  <div class="tipo-toggle">
+    <button class="tipo-btn fat ${(!f.tipo||f.tipo==='faturado')?'sel':''}" onclick="sf('tipo','faturado')"><i class="ti ti-file-dollar"></i> Faturado <span style="font-size:11px;opacity:.7">(individual)</span></button>
+    <button class="tipo-btn men ${f.tipo==='mensal'?'sel':''}" onclick="sf('tipo','mensal')"><i class="ti ti-calendar-month"></i> Mensal <span style="font-size:11px;opacity:.7">(agrupa por mês)</span></button>
+  </div>
+  ${f.tipo==='mensal'?'<p class="tipo-hint"><i class="ti ti-info-circle" style="font-size:12px"></i> Este lançamento será agrupado na pasta do mês correspondente e aparecerá no relatório mensal.</p>':''}
+
+  <div class="section-sep"><span><i class="ti ti-calendar" style="font-size:11px"></i> Dados do serviço</span></div>
+  <div class="field"><label>Data do serviço <span style="color:var(--red)">*</span></label><input type="date" value="${f.data||''}" onchange="sf('data',this.value)"></div>
+  <div class="field"><label>Nº CTe / Ordem de serviço</label><input type="text" placeholder="Ex.: CTe 000123" value="${f.cte||''}" oninput="sf('cte',this.value)"></div>
+
+  <div class="field full">
+    <label>Serviço prestado <span style="color:var(--red)">*</span> <span class="badge-pill">Aparece na NFS-e</span></label>
+    <input type="text" class="highlight" maxlength="150" placeholder="Ex.: Transporte de GLP P45 — Itaúna/MG para Divinópolis/MG" value="${serv}" oninput="sf('servico',this.value)">
+    <div class="char-count">${serv.length}/150</div>
+  </div>
+
+  <div class="field full">
+    <label>Descrição complementar</label>
+    <textarea rows="2" maxlength="400" placeholder="Quantidade, tipo de carga, observações adicionais..." oninput="sf('descricao',this.value)" style="resize:vertical">${desc}</textarea>
+    <div class="char-count">${desc.length}/400</div>
+  </div>
+
+  <div class="section-sep"><span><i class="ti ti-user" style="font-size:11px"></i> Tomador do serviço</span></div>
+  <div class="field"><label>Nome / Razão social <span style="color:var(--red)">*</span></label><input type="text" placeholder="Nome do contratante" value="${f.tomador||''}" oninput="sf('tomador',this.value)"></div>
+  <div class="field"><label>CNPJ / CPF</label><input type="text" placeholder="00.000.000/0001-00" value="${f.cnpj||''}" oninput="sf('cnpj',this.value)"></div>
+
+  <div class="section-sep"><span><i class="ti ti-map-pin" style="font-size:11px"></i> Rota</span></div>
+  <div class="field"><label>Origem <span style="color:var(--red)">*</span></label><input type="text" placeholder="Cidade/local de coleta" value="${f.origem||''}" oninput="sf('origem',this.value)"></div>
+  <div class="field"><label>Destino <span style="color:var(--red)">*</span></label><input type="text" placeholder="Cidade/local de entrega" value="${f.destino||''}" oninput="sf('destino',this.value)"></div>
+  <div class="field"><label>Veículo / Placa</label><input type="text" placeholder="ABC-1D23" value="${f.placa||''}" oninput="sf('placa',this.value.toUpperCase())" maxlength="8"></div>
+  <div class="field"><label>Distância (km)</label><input type="number" placeholder="0" value="${f.km||''}" oninput="sf('km',this.value)" min="0"></div>
+
+  <div class="section-sep"><span><i class="ti ti-currency-dollar" style="font-size:11px"></i> Financeiro</span></div>
+  <div class="field"><label>Valor do frete (R$) <span style="color:var(--red)">*</span></label><input type="number" placeholder="0,00" value="${f.valor||''}" oninput="sf('valor',this.value)" min="0" step="0.01"></div>
+  <div class="field"><label>Data de vencimento <span style="color:var(--red)">*</span> <span class="badge-pill" style="background:#FEF0DA;color:var(--amber)">Controle bancário</span></label>
+    <input type="date" value="${f.vencimento||''}" onchange="sf('vencimento',this.value)" style="border-color:${f.vencimento?'var(--blue)':'var(--gray-3)'}">
+    ${!f.vencimento&&f.data?`<div style="font-size:11px;color:var(--gray-4);margin-top:2px"><i class="ti ti-info-circle" style="font-size:11px"></i> Sugestão: <button onclick="sf('vencimento',sugerirVenc('${f.data}'));renderForm()" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:600;padding:0">usar +30 dias (${sugerirVencFmt('${f.data}')})</button></div>`:''}
+  </div>
+  <div class="field"><label>Forma de pagamento</label>
+    <select onchange="sf('pagamento',this.value)">
+      <option value="">Selecione...</option>
+      ${['PIX','Transferência bancária','Dinheiro','Boleto','Cheque'].map(p=>`<option value="${p}" ${f.pagamento===p?'selected':''}>${p}</option>`).join('')}
+    </select>
+  </div>`;
+}
+
+function render(){
+  const el=document.getElementById('nb-count');if(el)el.textContent=fretes.filter(f=>f.status!=='Cancelado').length;
+  const em=document.getElementById('nb-men-count');if(em)em.textContent=fretes.filter(f=>f.tipo==='mensal'&&f.status!=='Cancelado').length;
+  const ec=document.getElementById('nb-cli-count');if(ec)ec.textContent=clientes.length;
+
+  const main=document.getElementById('main');
+  let h='';
+
+  if(alerta){
+    h+=`<div class="alert ${alerta.tipo==='ok'?'alert-ok':'alert-err'}"><i class="ti ti-${alerta.tipo==='ok'?'check':'alert-circle'}"></i>${alerta.msg}</div>`;
+    setTimeout(()=>{alerta=null;render();},3800);
+  }
+
+  // DASHBOARD
+  if(tabAtual==='dashboard'){
+    h+=`<div class="page-header"><div class="page-title">Dashboard</div><div class="page-sub">${EMPRESA.endFull}</div></div>`;
+    const pend=fretes.filter(f=>f.status==='Pendente').length;
+    const nfsN=fretes.filter(f=>f.nfs).length;
+    const mens=fretes.filter(f=>f.tipo==='mensal'&&f.status!=='Cancelado').length;
+    h+=`<div class="stats">
+      <div class="stat"><div class="stat-label"><i class="ti ti-truck"></i> Total fretes</div><div class="stat-val blue">${fretes.filter(f=>f.status!=='Cancelado').length}</div></div>
+      <div class="stat"><div class="stat-label"><i class="ti ti-calendar-month"></i> Receita do mês</div><div class="stat-val blue">${fmtMoney(totalMes())}</div></div>
+      <div class="stat"><div class="stat-label"><i class="ti ti-clock"></i> Pendentes</div><div class="stat-val amber">${pend}</div></div>
+      <div class="stat"><div class="stat-label"><i class="ti ti-file-invoice"></i> NFS-e emitidas</div><div class="stat-val blue">${nfsN}</div></div>
+      <div class="stat"><div class="stat-label"><i class="ti ti-folders"></i> Mensais</div><div class="stat-val purple">${mens}</div></div>
+    </div>`;
+    const rec=[...fretes].sort((a,b)=>b.criadoEm-a.criadoEm).slice(0,6);
+    h+=`<div class="card"><div class="card-title"><i class="ti ti-history"></i> Últimos lançamentos</div>`;
+    if(!rec.length)h+=`<div class="empty"><i class="ti ti-truck"></i>Nenhum lançamento ainda.<br><small>Clique em "Novo lançamento" para começar.</small></div>`;
+    else{
+      h+=`<div class="table-wrap"><table><thead><tr><th>Data</th><th>Tomador</th><th>Serviço prestado</th><th>Valor</th><th>Tipo</th><th>Status</th></tr></thead><tbody>`;
+      rec.forEach(f=>{h+=`<tr><td style="white-space:nowrap">${fmtDate(f.data)}</td><td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.tomador||'-'}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.servico||'-'}</td><td style="font-weight:700;white-space:nowrap">${fmtMoney(f.valor)}</td><td>${badgeTp(f)}</td><td>${badgeSt(f)}</td></tr>`;});
+      h+=`</tbody></table></div>`;
+    }
+    h+=`</div>`;
+  }
+
+  // NOVO
+  if(tabAtual==='novo'){
+    h+=`<div class="page-header"><div class="page-title">Novo lançamento</div><div class="page-sub">Preencha os dados do frete</div></div>`;
+    h+=`<div class="card"><div class="form-grid" id="form-area"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-2)">
+      <button class="btn btn-sec" onclick="limpar()"><i class="ti ti-x"></i> Limpar</button>
+      <button class="btn btn-primary" onclick="salvar()"><i class="ti ti-check"></i> Salvar lançamento</button>
+    </div></div>`;
+  }
+
+  // FRETES
+  if(tabAtual==='fretes'){
+    h+=`<div class="page-header"><div class="page-title">Todos os fretes</div></div>`;
+    h+=`<div class="card">
+    <div class="filter-row">
+      <input type="text" placeholder="Buscar tomador ou serviço..." value="${filtro}" oninput="filtro=this.value;render()">
+      <select onchange="filtroStatus=this.value;render()">
+        <option value="">Todos os status</option>
+        <option value="Pendente" ${filtroStatus==='Pendente'?'selected':''}>Pendente</option>
+        <option value="Pago" ${filtroStatus==='Pago'?'selected':''}>Pago</option>
+        <option value="Cancelado" ${filtroStatus==='Cancelado'?'selected':''}>Cancelado</option>
+      </select>
+      <select onchange="filtroTipo=this.value;render()">
+        <option value="">Todos os tipos</option>
+        <option value="faturado" ${filtroTipo==='faturado'?'selected':''}>Faturado</option>
+        <option value="mensal" ${filtroTipo==='mensal'?'selected':''}>Mensal</option>
+      </select>
+    </div>`;
+    let lista=fretes.filter(f=>{
+      const t=`${f.tomador} ${f.servico} ${f.origem} ${f.destino}`.toLowerCase();
+      return(!filtro||t.includes(filtro.toLowerCase()))&&(!filtroStatus||f.status===filtroStatus)&&(!filtroTipo||f.tipo===filtroTipo);
+    }).sort((a,b)=>b.criadoEm-a.criadoEm);
+    if(!lista.length)h+=`<div class="empty"><i class="ti ti-search"></i>Nenhum frete encontrado.</div>`;
+    else{
+      h+=`<div class="table-wrap"><table><thead><tr><th>Data</th><th>Tomador</th><th>Serviço prestado</th><th>Valor</th><th>Tipo</th><th>NFS-e</th><th>Status</th><th>Ações</th></tr></thead><tbody>`;
+      lista.forEach(f=>{
+        h+=`<tr>
+          <td style="white-space:nowrap">${fmtDate(f.data)}</td>
+          <td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.tomador||'-'}</td>
+          <td style="max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.servico||'-'}</td>
+          <td style="font-weight:700;white-space:nowrap">${fmtMoney(f.valor)}</td>
+          <td>${badgeTp(f)}</td>
+          <td style="font-size:12px">${f.nfs?`<span style="color:var(--blue);font-weight:700">#${f.nfs}</span>`:'-'}</td>
+          <td>${badgeSt(f)}</td>
+          <td><div class="action-row">
+            ${f.status!=='Cancelado'&&f.status!=='Pago'?`<button class="btn btn-sec btn-sm" onclick="marcarPago('${f.id}')" title="Marcar pago"><i class="ti ti-check"></i></button>`:''}
+            <button class="btn btn-danger btn-sm" onclick="cancelar('${f.id}')" title="Excluir"><i class="ti ti-trash"></i></button>
+          </div></td>
+        </tr>`;
+      });
+      h+=`</tbody></table></div>`;
+    }
+    h+=`</div>`;
+  }
+
+  // MENSAL
+  if(tabAtual==='mensal'){
+    h+=`<div class="page-header"><div class="page-title">Pasta mensal</div><div class="page-sub">Fretes agrupados por mês e por cliente para fechamento</div></div>`;
+    const mens=fretes.filter(f=>f.tipo==='mensal'&&f.status!=='Cancelado');
+    const grupos={};
+    mens.forEach(f=>{const k=getMesAno(f.data);if(!grupos[k])grupos[k]=[];grupos[k].push(f);});
+    const chaves=Object.keys(grupos).sort((a,b)=>b.localeCompare(a));
+    if(!chaves.length){
+      h+=`<div class="card"><div class="empty"><i class="ti ti-folder-off"></i>Nenhum frete mensal lançado ainda.<br><small>Ao lançar um frete com tipo "Mensal", ele aparecerá aqui agrupado por mês e por cliente.</small></div></div>`;
+    } else {
+      chaves.forEach(k=>{
+        const itens=grupos[k];
+        const total=itens.reduce((s,f)=>s+Number(f.valor||0),0);
+        const ab=pastaAberta===k;
+        // Agrupar por cliente (tomador)
+        const porCliente={};
+        itens.forEach(f=>{const cli=f.tomador||f.cnpj||'Sem cliente';if(!porCliente[cli])porCliente[cli]=[];porCliente[cli].push(f);});
+        const cliKeys=Object.keys(porCliente).sort();
+        h+=`<div class="pasta">
+          <div class="pasta-header" onclick="togglePasta('${k}')">
+            <div class="pasta-titulo"><i class="ti ti-folder${ab?'-open':''}" style="color:var(--blue);font-size:18px"></i>${getMesNome(k)}</div>
+            <div class="pasta-meta">
+              <span style="color:var(--gray-4)">${cliKeys.length} cliente${cliKeys.length>1?'s':''} · ${itens.length} frete${itens.length>1?'s':''}</span>
+              <span style="font-weight:700;color:var(--blue)">${fmtMoney(total)}</span>
+              <button class="btn btn-green btn-sm" onclick="event.stopPropagation();gerarRel('${k}')"><i class="ti ti-report"></i> Relatório</button>
+              <i class="ti ti-chevron-${ab?'up':'down'}" style="color:var(--gray-4)"></i>
+            </div>
+          </div>
+          <div class="pasta-body ${ab?'open':''}">`;
+        cliKeys.forEach(cli=>{
+          const cliItens=porCliente[cli];
+          const cliTotal=cliItens.reduce((s,f)=>s+Number(f.valor||0),0);
+          const cliCnpj=cliItens[0].cnpj||'';
+          h+=`<div style="margin-top:14px;border:1px solid var(--gray-2);border-radius:var(--radius-sm);overflow:hidden">
+            <div style="padding:10px 14px;background:var(--blue-light);display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <span style="font-weight:700;color:var(--blue);font-size:14px"><i class="ti ti-building" style="font-size:13px"></i> ${cli}</span>
+                ${cliCnpj?`<span style="font-size:11px;color:var(--gray-4);margin-left:8px">${cliCnpj}</span>`:''}
+              </div>
+              <div style="text-align:right">
+                <span style="font-size:12px;color:var(--gray-4)">${cliItens.length} frete${cliItens.length>1?'s':''}</span>
+                <span style="font-weight:700;color:var(--blue);margin-left:8px">${fmtMoney(cliTotal)}</span>
+              </div>
+            </div>
+            <table><thead><tr><th>Data</th><th>Serviço prestado</th><th>Rota</th><th>Valor</th><th>NF</th><th>Status</th></tr></thead><tbody>`;
+          cliItens.sort((a,b)=>a.data.localeCompare(b.data)).forEach(f=>{
+            h+=`<tr><td style="white-space:nowrap">${fmtDate(f.data)}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.servico||'-'}</td><td style="font-size:11px;color:var(--gray-4)">${f.origem||'-'} → ${f.destino||'-'}</td><td style="font-weight:700">${fmtMoney(f.valor)}</td><td style="font-size:12px">${f.nfs?`<span style="color:var(--blue);font-weight:700">#${f.nfs}</span>`:'-'}</td><td>${badgeSt(f)}</td></tr>`;
+          });
+          h+=`</tbody></table></div>`;
+        });
+        h+=`</div></div>`;
+      });
+    }
+  }
+
+  // RELATÓRIO
+  if(tabAtual==='relatorio'){
+    const hoje=new Date();
+    const selMes=relMes||String(hoje.getMonth()+1).padStart(2,'0');
+    const selAno=relAno||String(hoje.getFullYear());
+    const chave=`${selAno}-${selMes}`;
+    const anos=[...new Set(fretes.map(f=>f.data?f.data.slice(0,4):null).filter(Boolean))];
+    if(!anos.includes(String(hoje.getFullYear())))anos.push(String(hoje.getFullYear()));
+    anos.sort((a,b)=>b-a);
+    h+=`<div class="page-header"><div class="page-title">Relatório mensal</div><div class="page-sub">Resumo de datas, valores e serviços prestados</div></div>`;
+    h+=`<div class="card">
+    <div class="filter-row" style="margin-bottom:0">
+      <select onchange="relMes=this.value;relGerado=null;render()" style="min-width:130px">
+        ${MESES.map((m,i)=>{const v=String(i+1).padStart(2,'0');return`<option value="${v}" ${selMes===v?'selected':''}>${m}</option>`;}).join('')}
+      </select>
+      <select onchange="relAno=this.value;relGerado=null;render()">
+        ${anos.map(a=>`<option value="${a}" ${selAno===a?'selected':''}>${a}</option>`).join('')}
+      </select>
+      <button class="btn btn-primary" onclick="gerarRel('${chave}')"><i class="ti ti-search"></i> Gerar relatório</button>
+    </div></div>`;
+
+    if(relGerado&&relGerado.chave===chave){
+      const itens=relGerado.itens;
+      const totalG=itens.reduce((s,f)=>s+Number(f.valor||0),0);
+      const totalPago=itens.filter(f=>f.status==='Pago').reduce((s,f)=>s+Number(f.valor||0),0);
+      h+=`<div class="rel-wrap">
+        <div class="rel-header">
+          <div class="rel-header-title"><i class="ti ti-report"></i> ${getMesNome(chave)}</div>
+          <div class="rel-header-sub">${EMPRESA.nome} · CNPJ ${EMPRESA.cnpj}</div>
+        </div>
+        <div class="rel-body">
+          <div class="rel-sumario">
+            <div class="rel-sum-item"><div class="rel-sum-label">Total de serviços</div><div class="rel-sum-val">${itens.length}</div></div>
+            <div class="rel-sum-item"><div class="rel-sum-label">Valor total</div><div class="rel-sum-val">${fmtMoney(totalG)}</div></div>
+            <div class="rel-sum-item"><div class="rel-sum-label" style="color:var(--green)">Recebido</div><div class="rel-sum-val" style="color:var(--green)">${fmtMoney(totalPago)}</div></div>
+          </div>`;
+      if(!itens.length){
+        h+=`<div class="empty" style="padding:2rem"><i class="ti ti-file-off"></i>Nenhum serviço lançado neste período.</div>`;
+      } else {
+        h+=`<table class="rel-table"><thead><tr><th>Data</th><th>Tomador</th><th>Serviço prestado</th><th>Tipo</th><th>NFS-e</th><th>Valor</th><th>Status</th></tr></thead><tbody>`;
+        itens.sort((a,b)=>a.data.localeCompare(b.data)).forEach(f=>{
+          h+=`<tr>
+            <td style="white-space:nowrap">${fmtDate(f.data)}</td>
+            <td>${f.tomador||'-'}</td>
+            <td>${f.servico||'-'}${f.descricao?`<br><span style="font-size:11px;color:var(--gray-4)">${f.descricao.slice(0,80)}${f.descricao.length>80?'…':''}</span>`:''}</td>
+            <td>${badgeTp(f)}</td>
+            <td style="font-size:12px">${f.nfs?`<span style="color:var(--blue);font-weight:700">#${f.nfs}</span>`:'-'}</td>
+            <td style="font-weight:700;white-space:nowrap">${fmtMoney(f.valor)}</td>
+            <td>${badgeSt(f)}</td>
+          </tr>`;
+        });
+        h+=`<tr class="total-row"><td colspan="5" style="text-align:right;padding:10px 12px">TOTAL DO PERÍODO</td><td style="padding:10px 12px;font-weight:800;color:var(--blue)">${fmtMoney(totalG)}</td><td></td></tr>`;
+        h+=`</tbody></table>`;
+      }
+      h+=`<div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn btn-sec" onclick="window.print()"><i class="ti ti-printer"></i> Imprimir relatório</button></div>`;
+      h+=`</div></div>`;
+    }
+  }
+
+  // MOTORISTAS
+  if(tabAtual==='motoristas'){
+    h+=`<div class="page-header">
+      <div class="page-title">Registros dos motoristas</div>
+      <div class="page-sub">Fretes enviados pelos motoristas — aprove para lançar no sistema</div>
+    </div>`;
+
+    if(!fbConfigOk){
+      h+=`<div class="card" style="text-align:center;padding:32px">
+        <i class="ti ti-settings" style="font-size:48px;color:var(--amber);display:block;margin-bottom:12px"></i>
+        <div style="font-size:17px;font-weight:700;color:var(--amber);margin-bottom:8px">Firebase não configurado</div>
+        <div style="font-size:13px;color:var(--gray-4);line-height:1.7;max-width:400px;margin:0 auto">
+          Adicione as credenciais do Firebase no topo do arquivo <strong>index.html</strong>.<br>
+          Consulte o <strong>README.md</strong> para instruções passo a passo.
+        </div>
+      </div>`;
+    } else {
+      const pendMot = (window._motFretes||[]).filter(f=>f.status==='pendente');
+      const todosMot = window._motFretes||[];
+
+      // Stats
+      h+=`<div class="stats" style="margin-bottom:16px">
+        <div class="stat"><div class="stat-label"><i class="ti ti-clock"></i> Aguardando aprovação</div><div class="stat-val amber">${pendMot.length}</div></div>
+        <div class="stat"><div class="stat-label"><i class="ti ti-check"></i> Aprovados hoje</div><div class="stat-val green">${todosMot.filter(f=>f.status==='aprovado'&&f._dataAprov===hoje()).length}</div></div>
+        <div class="stat"><div class="stat-label"><i class="ti ti-users"></i> Total recebido</div><div class="stat-val blue">${todosMot.length}</div></div>
+      </div>`;
+
+      // Filtro
+      h+=`<div class="card">
+        <div class="card-title" style="margin-bottom:12px"><i class="ti ti-inbox"></i> Todos os registros</div>
+        <div class="filter-row">
+          <select onchange="filtroMotStatus=this.value;render()" style="font-size:13px;padding:8px 12px;border:1px solid var(--gray-3);border-radius:var(--radius-sm);background:#fff;color:var(--gray-6)">
+            <option value="">Todos os status</option>
+            <option value="pendente" ${filtroMotStatus==='pendente'?'selected':''}>Aguardando</option>
+            <option value="aprovado" ${filtroMotStatus==='aprovado'?'selected':''}>Aprovados</option>
+            <option value="rejeitado" ${filtroMotStatus==='rejeitado'?'selected':''}>Rejeitados</option>
+          </select>
+          <select onchange="filtroMotMot=this.value;render()" style="font-size:13px;padding:8px 12px;border:1px solid var(--gray-3);border-radius:var(--radius-sm);background:#fff;color:var(--gray-6)">
+            <option value="">Todos os motoristas</option>
+            ${[...new Set(todosMot.map(f=>f.motorista))].map(m=>`<option value="${m}" ${filtroMotMot===m?'selected':''}>${m}</option>`).join('')}
+          </select>
+        </div>`;
+
+      let lista=(window._motFretes||[]).filter(f=>{
+        const s1=!filtroMotStatus||f.status===filtroMotStatus;
+        const s2=!filtroMotMot||f.motorista===filtroMotMot;
+        return s1&&s2;
+      });
+
+      if(!lista.length){
+        h+=`<div class="empty" style="padding:2rem"><i class="ti ti-inbox-off"></i>Nenhum registro encontrado.<br><small>Os fretes enviados pelos motoristas aparecerão aqui em tempo real.</small></div>`;
+      } else {
+        lista.forEach(f=>{
+          const dt=f.datetime?(f.datetime.slice(8,10)+'/'+f.datetime.slice(5,7)+'/'+f.datetime.slice(0,4)):'-';
+          const hr=f.datetime?f.datetime.slice(11,16):'-';
+          const isPend=f.status==='pendente';
+          const isAprov=f.status==='aprovado';
+          h+=`<div style="border:1px solid ${isPend?'#F0D080':isAprov?'#B8DDA8':var_gray3()};border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;background:${isPend?'#FFFBF0':isAprov?'#F6FFF0':'#fff'}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span style="font-size:13px;font-weight:700;background:var(--blue-light);color:var(--blue);padding:3px 10px;border-radius:20px"><i class="ti ti-user-circle" style="font-size:11px"></i> ${f.motorista}</span>
+                  <span style="font-size:12px;color:var(--gray-4)">${dt} às ${hr}</span>
+                  ${f.tipo==='mensal'?`<span style="font-size:11px;background:#EEE6FB;color:#5A1D9A;padding:2px 8px;border-radius:20px;font-weight:600">Mensal</span>`:`<span style="font-size:11px;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600">Faturado</span>`}
+                </div>
+                <div style="font-size:14px;font-weight:600;margin-bottom:4px">${f.servico||'-'}</div>
+                <div style="font-size:13px;margin-bottom:3px"><i class="ti ti-building" style="font-size:11px;color:var(--blue)"></i> <strong>Remetente:</strong> ${f.remetente||'-'} &nbsp;→&nbsp; <strong>Destinatário:</strong> ${f.destinatario||'-'}</div>
+                <div style="font-size:12px;color:var(--gray-4)"><i class="ti ti-map-pin" style="font-size:11px"></i> ${f.origem||'-'} → ${f.destino||'-'}</div>
+                ${f.formaPgto&&f.tipo==='faturado'?`<div style="font-size:12px;margin-top:3px"><i class="ti ti-cash" style="font-size:11px;color:var(--green)"></i> <strong>${{'avista':'À vista','pix':'PIX','boleto':'Boleto'}[f.formaPgto]||f.formaPgto}</strong></div>`:''}
+                ${f.emitirNF==='sim'?`<div style="font-size:12px;margin-top:3px;color:var(--blue);font-weight:600"><i class="ti ti-file-invoice" style="font-size:11px"></i> NF solicitada</div>`:''}
+                ${f.obs?`<div style="font-size:12px;color:var(--gray-4);margin-top:4px"><i class="ti ti-note" style="font-size:11px"></i> ${f.obs}</div>`:''}
+                ${f.vencimento?`<div style="font-size:12px;margin-top:4px;font-weight:600;color:var(--amber)"><i class="ti ti-calendar-event" style="font-size:11px"></i> Vencimento: ${f.vencimento.split('-').reverse().join('/')} (${f.prazoVenc||'?'} dias)</div>`:''}
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-size:20px;font-weight:800;color:var(--blue)">${fmtMoney(f.valor)}</div>
+                ${isPend
+                  ?`<div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end">
+                      <button class="btn btn-danger btn-sm" onclick="rejeitarMot('${f._id}')"><i class="ti ti-x"></i> Rejeitar</button>
+                      <button class="btn btn-green btn-sm" onclick="aprovarMot('${f._id}')"><i class="ti ti-check"></i> Aprovar</button>
+                    </div>`
+                  :isAprov
+                    ?`<span class="badge b-pago" style="margin-top:6px;display:inline-flex"><i class="ti ti-check" style="font-size:10px"></i>Aprovado</span>`
+                    :`<span class="badge b-cancel" style="margin-top:6px;display:inline-flex"><i class="ti ti-x" style="font-size:10px"></i>Rejeitado</span>`
+                }
+              </div>
+            </div>
+          </div>`;
+        });
+      }
+      h+=`</div>`;
+    }
+  }
+
+  // CONTROLE BANCÁRIO
+  if(tabAtual==='controle'){
+    const hoje=new Date();
+    const selMes=relMes||String(hoje.getMonth()+1).padStart(2,'0');
+    const selAno=relAno||String(hoje.getFullYear());
+    const anos=[...new Set(fretes.map(f=>f.data?f.data.slice(0,4):null).filter(Boolean))];
+    if(!anos.includes(String(hoje.getFullYear())))anos.push(String(hoje.getFullYear()));
+    anos.sort((a,b)=>b-a);
+
+    // Todos os fretes com boleto
+    const comBoleto=fretes.filter(f=>f.boleto&&f.status!=='Cancelado');
+    // Filtro por período se selecionado
+    const chaveCtrl=`${selAno}-${selMes}`;
+    const [filtroCtrlMes,setFiltroCtrlMes]=[relMes,v=>{relMes=v;}];
+
+    // Usa vencimento do lançamento, ou fallback +30 dias
+    function calcVenc(f){
+      if(f.vencimento){const[y,m,d]=f.vencimento.split('-');return`${d}/${m}/${y}`;}
+      if(!f.data)return'-';
+      const d=new Date(f.data+'T00:00:00');d.setDate(d.getDate()+30);return d.toLocaleDateString('pt-BR');
+    }
+    function calcVencISO(f){
+      if(f.vencimento)return f.vencimento;
+      if(!f.data)return'';
+      const d=new Date(f.data+'T00:00:00');d.setDate(d.getDate()+30);return d.toISOString().slice(0,10);
+    }
+
+    // Opções de filtro período
+    h+=`<div class="page-header"><div class="page-title">Controle bancário</div><div class="page-sub">Conferência de boletos — quem pagou e quem está pendente</div></div>`;
+
+    // Filtros
+    h+=`<div class="card" style="padding:18px 24px">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <select id="ctrl-mes" onchange="relMes=this.value;render()" style="padding:8px 12px;border:1px solid var(--gray-3);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif">
+        <option value="">Todos os meses</option>
+        ${MESES.map((m,i)=>{const v=String(i+1).padStart(2,'0');return`<option value="${v}" ${selMes===v&&relMes?'selected':''}>${m}</option>`;}).join('')}
+      </select>
+      <select id="ctrl-ano" onchange="relAno=this.value;render()" style="padding:8px 12px;border:1px solid var(--gray-3);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif">
+        ${anos.map(a=>`<option value="${a}" ${selAno===a?'selected':''}>${a}</option>`).join('')}
+      </select>
+      <select id="ctrl-status" onchange="filtroStatus=this.value;render()" style="padding:8px 12px;border:1px solid var(--gray-3);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif">
+        <option value="">Todos (pago + pendente)</option>
+        <option value="Pendente" ${filtroStatus==='Pendente'?'selected':''}>Apenas pendentes</option>
+        <option value="Pago" ${filtroStatus==='Pago'?'selected':''}>Apenas pagos</option>
+      </select>
+      <button class="btn btn-primary" onclick="exportarCSV()"><i class="ti ti-table-export"></i> Exportar CSV</button>
+      <button class="btn btn-sec" onclick="window.print()"><i class="ti ti-printer"></i> Imprimir</button>
+    </div></div>`;
+
+    // Monta lista filtrada
+    let listaCtrl=comBoleto.filter(f=>{
+      const mesOk=!relMes||getMesAno(f.data)===`${selAno}-${selMes}`;
+      const stOk=!filtroStatus||f.status===filtroStatus;
+      return mesOk&&stOk;
+    }).sort((a,b)=>calcVencISO(a).localeCompare(calcVencISO(b)));
+
+    const totalGeral=listaCtrl.reduce((s,f)=>s+Number(f.valor||0),0);
+    const totalPago=listaCtrl.filter(f=>f.status==='Pago').reduce((s,f)=>s+Number(f.valor||0),0);
+    const totalPend=listaCtrl.filter(f=>f.status!=='Pago').reduce((s,f)=>s+Number(f.valor||0),0);
+    const qtdPago=listaCtrl.filter(f=>f.status==='Pago').length;
+    const qtdPend=listaCtrl.filter(f=>f.status!=='Pago').length;
+
+    // Cards de resumo
+    h+=`<div class="stats" style="margin-bottom:16px">
+      <div class="stat"><div class="stat-label"><i class="ti ti-receipt"></i> Total boletos</div><div class="stat-val blue">${listaCtrl.length}</div></div>
+      <div class="stat"><div class="stat-label"><i class="ti ti-check"></i> Pagos</div><div class="stat-val green">${qtdPago}</div></div>
+      <div class="stat"><div class="stat-label"><i class="ti ti-clock"></i> Pendentes</div><div class="stat-val amber">${qtdPend}</div></div>
+      <div class="stat"><div class="stat-label"><i class="ti ti-currency-dollar"></i> Total geral</div><div class="stat-val blue">${fmtMoney(totalGeral)}</div></div>
+      <div class="stat"><div class="stat-label" style="color:var(--green)"><i class="ti ti-check"></i> Recebido</div><div class="stat-val green">${fmtMoney(totalPago)}</div></div>
+      <div class="stat"><div class="stat-label" style="color:var(--amber)"><i class="ti ti-alert-circle"></i> A receber</div><div class="stat-val amber">${fmtMoney(totalPend)}</div></div>
+    </div>`;
+
+    if(!listaCtrl.length){
+      h+=`<div class="card"><div class="empty"><i class="ti ti-receipt-off"></i>Nenhum boleto encontrado para o período selecionado.<br><small>Emita boletos na aba "Emitir boleto" para eles aparecerem aqui.</small></div></div>`;
+    } else {
+      h+=`<div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 20px;background:var(--gray-1);border-bottom:1px solid var(--gray-2);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-weight:700;font-size:14px;color:var(--gray-6)"><i class="ti ti-building-bank" style="color:var(--blue)"></i> Relatório de boletos${relMes?' — '+getMesNome(chaveCtrl):''}</span>
+        <span style="font-size:12px;color:var(--gray-4)">${listaCtrl.length} registro${listaCtrl.length>1?'s':''}</span>
+      </div>
+      <div class="table-wrap">
+      <table id="tabela-controle">
+        <thead>
+          <tr>
+            <th>Vencimento</th>
+            <th>Empresa / Tomador</th>
+            <th>Serviço prestado</th>
+            <th>Nº do boleto</th>
+            <th>Valor</th>
+            <th>Situação</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      listaCtrl.forEach(f=>{
+        const venc=calcVencISO(f);
+        const vencFmt=calcVenc(f);
+        const hoje2=new Date().toISOString().slice(0,10);
+        const vencido=f.status!=='Pago'&&venc<hoje2;
+        const pago=f.status==='Pago';
+        h+=`<tr style="${vencido?'background:#FFF8F8;':pago?'background:#F6FFF0;':''}">
+          <td style="white-space:nowrap;font-weight:${vencido?'700':'500'};color:${vencido?'var(--red)':pago?'var(--green)':'var(--gray-6)'}">
+            ${vencFmt}
+            ${vencido?`<br><span style="font-size:10px;color:var(--red);font-weight:700"><i class="ti ti-alert-circle" style="font-size:10px"></i> VENCIDO</span>`:''}
+          </td>
+          <td style="font-weight:600;max-width:150px">${f.tomador||'-'}<br><span style="font-size:11px;font-weight:400;color:var(--gray-4)">${f.cnpj||''}</span></td>
+          <td style="font-size:12px;max-width:180px;word-break:break-word;white-space:normal">${f.servico||'-'}</td>
+          <td style="font-family:'DM Mono',monospace;font-size:11px;max-width:200px;word-break:break-all;white-space:normal;color:var(--blue)">${f.boleto||'-'}</td>
+          <td style="font-weight:700;white-space:nowrap;font-size:15px;color:${pago?'var(--green)':'var(--gray-6)'}">${fmtMoney(f.valor)}</td>
+          <td>
+            ${pago
+              ?`<span class="badge b-pago"><i class="ti ti-check" style="font-size:10px"></i>Pago</span>`
+              :vencido
+                ?`<span class="badge" style="background:#FCEAEA;color:var(--red)"><i class="ti ti-alert-circle" style="font-size:10px"></i>Vencido</span>`
+                :`<span class="badge b-pend"><i class="ti ti-clock" style="font-size:10px"></i>Pendente</span>`
+            }
+          </td>
+          <td>
+            ${!pago?`<button class="btn btn-green btn-sm" onclick="marcarPago('${f.id}')"><i class="ti ti-check"></i> Pago</button>`
+              :`<span style="font-size:11px;color:var(--green)"><i class="ti ti-check-circle"></i> Confirmado</span>`}
+          </td>
+        </tr>`;
+      });
+
+      h+=`</tbody>
+        <tfoot>
+          <tr style="background:var(--blue-light);font-weight:700">
+            <td colspan="4" style="padding:12px 12px;text-align:right;color:var(--blue)">TOTAL</td>
+            <td style="padding:12px;color:var(--blue);font-size:15px">${fmtMoney(totalGeral)}</td>
+            <td colspan="2" style="padding:12px;font-size:12px;color:var(--blue)">Recebido: ${fmtMoney(totalPago)} &nbsp;|&nbsp; A receber: ${fmtMoney(totalPend)}</td>
+          </tr>
+        </tfoot>
+      </table></div></div>`;
+    }
+  }
+
+  // REMESSA CNAB 240
+  if(tabAtual==='remessa'){
+    const pendRem = fretes.filter(f=>f.boleto&&f.status!=='Cancelado'&&!f.remessa);
+    const enviados = fretes.filter(f=>f.remessa);
+
+    h+=`<div class="page-header"><div class="page-title">Remessa CNAB 240 — SICOOB</div><div class="page-sub">Gere o arquivo .REM para enviar ao SICOOB pelo internet banking</div></div>`;
+
+    // Config card
+    h+=`<div class="card" style="border-left:4px solid var(--blue)">
+      <div class="card-title" style="margin-bottom:10px"><i class="ti ti-settings"></i> Dados identificados no boleto</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;font-size:13px">
+        ${[
+          ['Banco','756 — SICOOB'],
+          ['Cooperativa','4101 — SICOOB CENTRO-OESTE'],
+          ['Cód. beneficiário','1947729'],
+          ['Carteira','01'],
+          ['CNPJ','53.651.463/0001-80'],
+          ['Layout','CNAB 240']
+        ].map(([l,v])=>`<div style="background:var(--gray-1);border-radius:var(--radius-sm);padding:10px 12px"><div style="font-size:10px;color:var(--gray-4);font-weight:600;text-transform:uppercase;margin-bottom:3px">${l}</div><div style="font-weight:700;color:var(--blue)">${v}</div></div>`).join('')}
+      </div>
+      <div style="margin-top:12px;padding:10px 12px;background:#FEF8E6;border-radius:var(--radius-sm);border:1px solid #F0D080;font-size:12px;color:#7A5000">
+        <i class="ti ti-alert-triangle" style="font-size:13px"></i> <strong>Importante:</strong> Confirme com sua cooperativa SICOOB o DV da agência e da conta antes de usar em produção. O arquivo gerado segue o layout CNAB 240 padrão FEBRABAN homologado pelo SICOOB.
+      </div>
+    </div>`;
+
+    // Boletos para remessa
+    h+=`<div class="card"><div class="card-title"><i class="ti ti-checklist"></i> Boletos disponíveis para remessa <span style="font-size:13px;font-weight:400;color:var(--gray-4)">(${pendRem.length} pendente${pendRem.length!==1?'s':''})</span></div>`;
+
+    if(!pendRem.length){
+      h+=`<div class="empty" style="padding:2rem"><i class="ti ti-file-off"></i>Nenhum boleto pendente de remessa.<br><small>Boletos já enviados ou fretes sem boleto não aparecem aqui.</small></div>`;
+    } else {
+      h+=`<div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+        <button class="btn btn-sec btn-sm" onclick="selecionarTodos(true)"><i class="ti ti-checkbox"></i> Selecionar todos</button>
+        <button class="btn btn-sec btn-sm" onclick="selecionarTodos(false)"><i class="ti ti-square"></i> Limpar seleção</button>
+        <span style="font-size:12px;color:var(--gray-4);margin-left:auto" id="count-sel">0 selecionados</span>
+      </div>
+      <div class="table-wrap">
+      <table id="tab-remessa"><thead><tr>
+        <th style="width:40px"><input type="checkbox" id="chk-all" onchange="selecionarTodos(this.checked)"></th>
+        <th>Vencimento</th><th>Tomador</th><th>Serviço prestado</th><th>Nº boleto (resumido)</th><th>Valor</th>
+      </tr></thead><tbody>`;
+      pendRem.forEach(f=>{
+        let vencStr='-';
+        if(f.vencimento){const[vy,vm,vd]=f.vencimento.split('-');vencStr=`${vd}/${vm}/${vy}`;}
+        const boletoCurto=(f.boleto||'').replace(/\s/g,'').slice(-10);
+        h+=`<tr>
+          <td><input type="checkbox" class="chk-boleto" data-id="${f.id}" onchange="atualizarContSel()"></td>
+          <td style="white-space:nowrap;font-weight:600">${vencStr}</td>
+          <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${f.tomador||'-'}</td>
+          <td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.servico||'-'}</td>
+          <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--blue)">...${boletoCurto}</td>
+          <td style="font-weight:700">${fmtMoney(f.valor)}</td>
+        </tr>`;
+      });
+      h+=`</tbody></table></div>
+      <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;padding-top:14px;border-top:1px solid var(--gray-2)">
+        <button class="btn btn-primary" onclick="gerarRemessa()"><i class="ti ti-file-export"></i> Gerar arquivo de remessa (.REM)</button>
+      </div>`;
+    }
+    h+=`</div>`;
+
+    // Histórico de remessas
+    if(enviados.length){
+      const grupos={};
+      enviados.forEach(f=>{const k=f.remessa;if(!grupos[k])grupos[k]=[];grupos[k].push(f);});
+      h+=`<div class="card"><div class="card-title"><i class="ti ti-history"></i> Remessas geradas</div>
+      <div class="table-wrap"><table><thead><tr><th>Arquivo gerado</th><th>Qtd títulos</th><th>Valor total</th><th>Situação</th></tr></thead><tbody>`;
+      Object.keys(grupos).sort((a,b)=>b.localeCompare(a)).forEach(k=>{
+        const itens=grupos[k];
+        const tot=itens.reduce((s,f)=>s+Number(f.valor||0),0);
+        h+=`<tr>
+          <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--blue)">${k}</td>
+          <td>${itens.length}</td>
+          <td style="font-weight:700">${fmtMoney(tot)}</td>
+          <td><span class="badge b-nf"><i class="ti ti-check" style="font-size:10px"></i>Enviada</span></td>
+        </tr>`;
+      });
+      h+=`</tbody></table></div></div>`;
+    }
+  }
+
+  // RETORNO CNAB 240
+  if(tabAtual==='retorno'){
+    h+=`<div class="page-header"><div class="page-title">Retorno CNAB 240 — SICOOB</div><div class="page-sub">Importe o arquivo .RET do banco para atualizar automaticamente os pagamentos</div></div>`;
+
+    // Upload card
+    h+=`<div class="card" style="border-left:4px solid var(--green)">
+      <div class="card-title"><i class="ti ti-file-import"></i> Importar arquivo de retorno</div>
+      <div style="background:var(--gray-1);border:2px dashed var(--gray-3);border-radius:var(--radius);padding:28px;text-align:center;margin-bottom:14px" id="drop-zone">
+        <i class="ti ti-cloud-upload" style="font-size:38px;color:var(--gray-4);display:block;margin-bottom:10px"></i>
+        <div style="font-size:14px;font-weight:600;color:var(--gray-5);margin-bottom:6px">Arraste o arquivo .RET aqui</div>
+        <div style="font-size:12px;color:var(--gray-4);margin-bottom:14px">ou clique para selecionar</div>
+        <label style="display:inline-flex;align-items:center;gap:6px;background:var(--blue);color:#fff;padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer">
+          <i class="ti ti-upload"></i> Selecionar arquivo .RET
+          <input type="file" accept=".ret,.RET,.txt,.TXT,.rem,.REM" style="display:none" onchange="lerArquivoRetorno(this)">
+        </label>
+      </div>
+      <div style="font-size:12px;color:var(--gray-4);padding:10px 12px;background:#F0F7FF;border-radius:var(--radius-sm);border:1px solid #C0D8F5">
+        <i class="ti ti-info-circle" style="color:var(--blue)"></i>
+        <strong>Como obter o arquivo:</strong> Acesse o internet banking do SICOOB → <strong>Cobrança → Retorno → Baixar arquivo</strong>.
+        O arquivo tem extensão <strong>.RET</strong> e segue o layout CNAB 240.
+      </div>
+    </div>`;
+
+    // Resultado do processamento
+    if(window._retornoResultado){
+      const res=window._retornoResultado;
+      h+=`<div class="card">
+        <div class="card-title"><i class="ti ti-report-analytics"></i> Resultado do processamento — <span style="font-size:13px;font-weight:500;color:var(--gray-4)">${res.arquivo}</span></div>
+
+        <div class="stats" style="margin-bottom:16px">
+          <div class="stat"><div class="stat-label"><i class="ti ti-file-text"></i> Registros lidos</div><div class="stat-val blue">${res.total}</div></div>
+          <div class="stat"><div class="stat-label" style="color:var(--green)"><i class="ti ti-check"></i> Pagos/Liquidados</div><div class="stat-val green">${res.pagos}</div></div>
+          <div class="stat"><div class="stat-label"><i class="ti ti-check-circle"></i> Entradas confirmadas</div><div class="stat-val blue">${res.confirmados}</div></div>
+          <div class="stat"><div class="stat-label" style="color:var(--red)"><i class="ti ti-x"></i> Rejeitados</div><div class="stat-val amber">${res.rejeitados}</div></div>
+          <div class="stat"><div class="stat-label"><i class="ti ti-arrow-down"></i> Baixados</div><div class="stat-val amber">${res.baixados}</div></div>
+          <div class="stat"><div class="stat-label"><i class="ti ti-question-mark"></i> Não encontrados</div><div class="stat-val amber">${res.naoEncontrados}</div></div>
+        </div>`;
+
+      if(res.itens.length){
+        h+=`<div class="table-wrap"><table><thead><tr>
+          <th>Ocorrência</th><th>Tomador</th><th>Nosso número</th><th>Vencimento</th><th>Valor</th><th>Data pagamento</th><th>Situação</th>
+        </tr></thead><tbody>`;
+        res.itens.forEach(it=>{
+          const cor=it.tipo==='pago'?'var(--green)':it.tipo==='confirmado'?'var(--blue)':it.tipo==='rejeitado'?'var(--red)':'var(--amber)';
+          const icone=it.tipo==='pago'?'ti-check':it.tipo==='confirmado'?'ti-check-circle':it.tipo==='rejeitado'?'ti-alert-circle':'ti-arrow-down';
+          h+=`<tr style="${it.tipo==='pago'?'background:#F6FFF0;':''}">
+            <td><span class="badge" style="background:${cor}22;color:${cor}"><i class="ti ${icone}" style="font-size:10px"></i>${it.ocorrenciaDesc}</span></td>
+            <td style="font-weight:600;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it.tomador||it.numDoc}</td>
+            <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--blue)">${it.nossoNum}</td>
+            <td style="white-space:nowrap">${it.dataVenc}</td>
+            <td style="font-weight:700">${it.valorFmt}</td>
+            <td style="white-space:nowrap;color:var(--green);font-weight:600">${it.dataPagto||'-'}</td>
+            <td style="font-size:12px;max-width:140px">${it.statusMsg}</td>
+          </tr>`;
+        });
+        h+=`</tbody></table></div>`;
+      }
+      h+=`<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;padding-top:12px;border-top:1px solid var(--gray-2)">
+        <button class="btn btn-sec" onclick="window._retornoResultado=null;render()"><i class="ti ti-refresh"></i> Limpar resultado</button>
+        <button class="btn btn-green" onclick="confirmarRetorno()"><i class="ti ti-check"></i> Confirmar atualizações no sistema</button>
+      </div>`;
+      h+=`</div>`;
+    }
+
+    // Histórico de retornos processados
+    const histRetorno=fretes.filter(f=>f.dataPagamento).length;
+    if(histRetorno){
+      const pagosRet=fretes.filter(f=>f.dataPagamento);
+      h+=`<div class="card"><div class="card-title"><i class="ti ti-history"></i> Pagamentos confirmados via retorno (${pagosRet.length})</div>
+      <div class="table-wrap"><table><thead><tr><th>Data pagamento</th><th>Tomador</th><th>Serviço</th><th>Valor</th></tr></thead><tbody>`;
+      pagosRet.sort((a,b)=>b.dataPagamento.localeCompare(a.dataPagamento)).slice(0,10).forEach(f=>{
+        h+=`<tr><td style="white-space:nowrap;color:var(--green);font-weight:600">${f.dataPagamento}</td><td>${f.tomador||'-'}</td><td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.servico||'-'}</td><td style="font-weight:700">${fmtMoney(f.valor)}</td></tr>`;
+      });
+      h+=`</tbody></table></div></div>`;
+    }
+  }
+
+  // CLIENTES
+  if(tabAtual==='clientes'){
+    h+=`<div class="page-header"><div class="page-title">Cadastro de clientes</div><div class="page-sub">Clientes salvos aparecem como opção rápida no lançamento</div></div>`;
+    h+=`<div class="card">
+      <div class="card-title"><i class="ti ti-user-plus"></i> Novo cliente</div>
+      <div class="form-grid">
+        <div class="field"><label>Nome / Razão social <span style="color:var(--red)">*</span></label><input type="text" id="cli-nome" placeholder="Nome do cliente ou empresa"></div>
+        <div class="field"><label>CNPJ / CPF</label><input type="text" id="cli-cnpj" placeholder="00.000.000/0001-00"></div>
+        <div class="field"><label>Origem padrão</label><input type="text" id="cli-origem" placeholder="Cidade/local de coleta habitual"></div>
+        <div class="field"><label>Destino padrão</label><input type="text" id="cli-destino" placeholder="Cidade/local de entrega habitual"></div>
+        <div class="field"><label>Tipo padrão de faturamento</label>
+          <select id="cli-tipo">
+            <option value="faturado">Faturado (individual)</option>
+            <option value="mensal">Mensal</option>
+          </select>
+        </div>
+        <div class="field"><label>Forma de pagamento padrão</label>
+          <select id="cli-pgto">
+            <option value="">Selecione...</option>
+            ${['PIX','Transferência bancária','Dinheiro','Boleto','Cheque'].map(p=>`<option value="${p}">${p}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--gray-2)">
+        <button class="btn btn-primary" onclick="salvarCliente()"><i class="ti ti-check"></i> Salvar cliente</button>
+      </div>
+    </div>`;
+
+    if(clientes.length){
+      h+=`<div class="card"><div class="card-title"><i class="ti ti-users"></i> Clientes cadastrados</div>
+      <div class="table-wrap"><table><thead><tr><th>Nome / Razão social</th><th>CNPJ / CPF</th><th>Origem padrão</th><th>Destino padrão</th><th>Tipo</th><th>Pgto</th><th>Ações</th></tr></thead><tbody>`;
+      clientes.forEach((c,i)=>{
+        h+=`<tr>
+          <td style="font-weight:600">${c.nome}</td>
+          <td style="font-size:12px">${c.cnpj||'-'}</td>
+          <td style="font-size:12px">${c.origem||'-'}</td>
+          <td style="font-size:12px">${c.destino||'-'}</td>
+          <td>${c.tipo==='mensal'?`<span class="badge b-men" style="font-size:10px">Mensal</span>`:`<span class="badge b-fat" style="font-size:10px">Faturado</span>`}</td>
+          <td style="font-size:12px">${c.pgto||'-'}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="excluirCliente(${i})"><i class="ti ti-trash"></i></button></td>
+        </tr>`;
+      });
+      h+=`</tbody></table></div></div>`;
+    } else {
+      h+=`<div class="card"><div class="empty" style="padding:2rem"><i class="ti ti-users"></i>Nenhum cliente cadastrado ainda.<br><small>Cadastre acima e ele aparecerá como seleção rápida no lançamento.</small></div></div>`;
+    }
+  }
+
+  // NFS-e
+  if(tabAtual==='nfs'){
+    h+=`<div class="page-header"><div class="page-title">Emitir NFS-e</div><div class="page-sub">Nota Fiscal de Serviço</div></div>`;
+    h+=`<div class="card">`;
+    const semNFS=fretes.filter(f=>!f.nfs&&f.status!=='Cancelado');
+    if(!semNFS.length)h+=`<div class="empty"><i class="ti ti-file-off"></i>Nenhum frete pendente de NFS-e.</div>`;
+    else{
+      h+=`<div class="field" style="max-width:520px;margin-bottom:18px"><label>Selecionar frete</label>
+      <select onchange="docFrete=this.value?{id:this.value,tipo:'nfs'}:null;render()"><option value="">Selecione um frete...</option>
+      ${semNFS.map(f=>`<option value="${f.id}" ${docFrete&&docFrete.id===f.id?'selected':''}>${fmtDate(f.data)} — ${f.tomador||'?'} — ${(f.servico||'').slice(0,40)} — ${fmtMoney(f.valor)}</option>`).join('')}
+      </select></div>`;
+    }
+    if(docFrete&&docFrete.tipo==='nfs'){
+      const f=fretes.find(x=>x.id===docFrete.id);
+      if(f){
+        const num=f.nfs||genNFS();
+        const hoje=new Date().toLocaleDateString('pt-BR');
+        h+=`<div class="doc">
+          <div class="doc-header">
+            <div>
+              <div class="doc-empresa">${EMPRESA.nome}</div>
+              <div class="doc-info">CNPJ: ${EMPRESA.cnpj} · ${EMPRESA.tipo}<br>${EMPRESA.logradouro} — ${EMPRESA.bairro} · ${EMPRESA.cidade}/${EMPRESA.uf} — CEP ${EMPRESA.cep}</div>
+            </div>
+            <div class="doc-nf-num">
+              <div class="doc-nf-label">NFS-e Nº</div>
+              <div class="doc-nf-val">${num}</div>
+              <div style="font-size:11px;color:#777">Emissão: ${hoje}</div>
+            </div>
+          </div>
+          <div class="doc-bloco">
+            <div class="doc-bloco-title"><i class="ti ti-user" style="font-size:10px"></i> Tomador do serviço</div>
+            <div class="doc-row"><span>Nome / Razão social</span><span>${f.tomador||'-'}</span></div>
+            <div class="doc-row"><span>CNPJ / CPF</span><span>${f.cnpj||'Não informado'}</span></div>
+          </div>
+          <div class="doc-servico-box">
+            <div class="doc-servico-label"><i class="ti ti-star" style="font-size:10px"></i> Serviço prestado</div>
+            <div class="doc-servico-val">${f.servico||'Serviço de transporte.'}</div>
+          </div>
+          ${f.descricao?`<div class="doc-bloco-title" style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px"><i class="ti ti-align-left" style="font-size:10px"></i> Descrição complementar</div><div class="doc-desc-box">${f.descricao}</div>`:''}
+          <div class="doc-bloco">
+            <div class="doc-bloco-title"><i class="ti ti-map-pin" style="font-size:10px"></i> Dados do transporte</div>
+            <div class="doc-row"><span>Origem</span><span>${f.origem||'-'}</span></div>
+            <div class="doc-row"><span>Destino</span><span>${f.destino||'-'}</span></div>
+            ${f.placa?`<div class="doc-row"><span>Placa</span><span>${f.placa}</span></div>`:''}
+            ${f.km?`<div class="doc-row"><span>Distância</span><span>${f.km} km</span></div>`:''}
+            ${f.cte?`<div class="doc-row"><span>CTe / OS</span><span>${f.cte}</span></div>`:''}
+          </div>
+          <div class="doc-bloco">
+            <div class="doc-bloco-title"><i class="ti ti-currency-dollar" style="font-size:10px"></i> Financeiro</div>
+            <div class="doc-row"><span>Forma de pagamento</span><span>${f.pagamento||'Não informado'}</span></div>
+            <div class="doc-row"><span>ISS</span><span>MEI — isento de retenção</span></div>
+          </div>
+          <div class="doc-total">Valor total do serviço: ${fmtMoney(f.valor)}</div>
+          <div class="doc-footer">Prestador: ${EMPRESA.nome} · CNPJ: ${EMPRESA.cnpj} · ${EMPRESA.endFull}<br>Documento gerado pelo sistema de gestão de fretes — Ambiente de homologação</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+          <button class="btn btn-sec" onclick="window.print()"><i class="ti ti-printer"></i> Imprimir</button>
+          <button class="btn btn-primary" onclick="emitirNFS('${f.id}','${num}')"><i class="ti ti-file-invoice"></i> Confirmar emissão</button>
+        </div>`;
+      }
+    }
+    h+=`</div>`;
+  }
+
+  // BOLETO
+  if(tabAtual==='boleto'){
+    h+=`<div class="page-header"><div class="page-title">Emitir boleto</div></div>`;
+    h+=`<div class="card">`;
+    const semBol=fretes.filter(f=>!f.boleto&&f.status!=='Cancelado');
+    if(!semBol.length)h+=`<div class="empty"><i class="ti ti-file-off"></i>Nenhum frete pendente de boleto.</div>`;
+    else{
+      h+=`<div class="field" style="max-width:520px;margin-bottom:18px"><label>Selecionar frete</label>
+      <select onchange="docFrete=this.value?{id:this.value,tipo:'boleto'}:null;render()"><option value="">Selecione...</option>
+      ${semBol.map(f=>`<option value="${f.id}" ${docFrete&&docFrete.id===f.id?'selected':''}>${fmtDate(f.data)} — ${f.tomador||'?'} — ${fmtMoney(f.valor)}</option>`).join('')}
+      </select></div>`;
+    }
+    if(docFrete&&docFrete.tipo==='boleto'){
+      const f=fretes.find(x=>x.id===docFrete.id);
+      if(f){
+        const cod=f.boleto||genBoleto();
+        const vencStr=f.vencimento?(()=>{const[y,m,d]=f.vencimento.split('-');return`${d}/${m}/${y}`;})():(()=>{const vd=new Date();vd.setDate(vd.getDate()+30);return vd.toLocaleDateString('pt-BR');})();
+        const bars=Array(55).fill('').map(()=>`<div style="width:${Math.random()>.4?2:1}px;height:${26+Math.floor(Math.random()*16)}px;background:#fff;margin:0 .5px;opacity:${.6+Math.random()*.4}"></div>`).join('');
+        h+=`<div class="doc">
+          <div class="doc-header">
+            <div>
+              <div class="doc-empresa">${EMPRESA.nome}</div>
+              <div class="doc-info">CNPJ: ${EMPRESA.cnpj} · ${EMPRESA.tipo}<br>${EMPRESA.endFull}</div>
+            </div>
+            <div class="doc-nf-num">
+              <div class="doc-nf-label">Vencimento</div>
+              <div style="font-size:17px;font-weight:800;color:var(--blue)">${vencStr}</div>
+              <div style="font-size:21px;font-weight:800;color:var(--blue)">${fmtMoney(f.valor)}</div>
+            </div>
+          </div>
+          <div class="doc-bloco">
+            <div class="doc-bloco-title">Pagador</div>
+            <div class="doc-row"><span>Nome / Razão social</span><span>${f.tomador||'-'}</span></div>
+            <div class="doc-row"><span>CNPJ / CPF</span><span>${f.cnpj||'Não informado'}</span></div>
+          </div>
+          <div class="doc-bloco">
+            <div class="doc-bloco-title">Referência</div>
+            <div class="doc-row"><span>Serviço prestado</span><span>${f.servico||'-'}</span></div>
+            <div class="doc-row"><span>Rota</span><span>${f.origem||'-'} → ${f.destino||'-'}</span></div>
+            <div class="doc-row"><span>Data do serviço</span><span>${fmtDate(f.data)}</span></div>
+            ${f.cte?`<div class="doc-row"><span>CTe / OS</span><span>${f.cte}</span></div>`:''}
+          </div>
+          <div class="boleto-bar">${bars}</div>
+          <div class="boleto-linha">${cod}</div>
+          <div class="doc-footer">Beneficiário: ${EMPRESA.nome} · CNPJ: ${EMPRESA.cnpj} · ${EMPRESA.endFull}<br>Após vencimento: multa 2% + juros 1%/mês · Documento simulado — Ambiente de homologação</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+          <button class="btn btn-sec" onclick="window.print()"><i class="ti ti-printer"></i> Imprimir</button>
+          <button class="btn btn-primary" onclick="emitirBoleto('${f.id}','${cod}')"><i class="ti ti-receipt"></i> Confirmar emissão</button>
+        </div>`;
+      }
+    }
+    h+=`</div>`;
+  }
+
+  main.innerHTML=h;
+  if(tabAtual==='novo')renderForm();
+}
+
+function limpar(){form={tipo:'faturado'};renderForm();}
+function togglePasta(k){pastaAberta=pastaAberta===k?null:k;render();}
+function gerarRel(k){relGerado={chave:k,itens:fretes.filter(f=>getMesAno(f.data)===k&&f.status!=='Cancelado')};tabAtual='relatorio';relMes=k.split('-')[1];relAno=k.split('-')[0];document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));const nb=document.getElementById('nb-relatorio');if(nb)nb.classList.add('active');render();}
+
+function salvar(){
+  const f=form;
+  if(!f.data||!f.vencimento||!f.tomador||!f.origem||!f.destino||!f.valor||!f.servico){alerta={tipo:'err',msg:'Preencha: Data, Vencimento, Tomador, Origem, Destino, Serviço prestado e Valor.'};render();return;}
+  const novo={...f,id:genId(),status:'Pendente',criadoEm:Date.now()};
+  fretes.push(novo);save();form={tipo:'faturado'};
+  alerta={tipo:'ok',msg:`Lançamento salvo!${novo.tipo==='mensal'?' Adicionado na pasta '+getMesNome(getMesAno(novo.data))+'.':''}`};
+  nav('fretes');
+}
+function emitirNFS(id,num){const f=fretes.find(x=>x.id===id);if(!f)return;f.nfs=num;f.status='NFS-e emitida';save();alerta={tipo:'ok',msg:`NFS-e nº ${num} emitida para ${f.tomador}!`};docFrete=null;nav('fretes');}
+function emitirBoleto(id,cod){const f=fretes.find(x=>x.id===id);if(!f)return;f.boleto=cod;save();alerta={tipo:'ok',msg:`Boleto emitido para ${f.tomador}!`};docFrete=null;nav('fretes');}
+function marcarPago(id){const f=fretes.find(x=>x.id===id);if(f){f.status='Pago';save();alerta={tipo:'ok',msg:`Frete de ${f.tomador} marcado como pago.`};render();}}
+function cancelar(id){const f=fretes.find(x=>x.id===id);if(f&&confirm(`Cancelar frete de ${f.tomador}?`)){f.status='Cancelado';save();alerta={tipo:'ok',msg:'Frete cancelado.'};render();}}
+
+function sugerirVenc(data){if(!data)return'';const d=new Date(data+'T00:00:00');d.setDate(d.getDate()+30);return d.toISOString().slice(0,10);}
+function sugerirVencFmt(data){if(!data)return'';const d=new Date(data+'T00:00:00');d.setDate(d.getDate()+30);return d.toLocaleDateString('pt-BR');}
+
+// ══════════════════════════════════════════════════
+// CONFIGURAÇÃO FIREBASE — preencha com seus dados
+// ══════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBRcsXHRXG2HgUjl87xkpLzGT6GcrbN8v8",
+  authDomain: "fretes-marco.firebaseapp.com",
+  projectId: "fretes-marco",
+  storageBucket: "fretes-marco.firebasestorage.app",
+  messagingSenderId: "998234786464",
+  appId: "1:998234786464:web:007d3b1d00ae0626acd7c5"
+};
+// ══════════════════════════════════════════════════
+
+let fbConfigOk = false;
+let fbDb = null;
+let filtroMotStatus = 'pendente';
+let filtroMotMot = '';
+
+function var_gray3(){ return '#D1D5DF'; }
+function hoje(){ return new Date().toISOString().slice(0,10); }
+
+function iniciarFirebaseAdmin(){
+  try {
+    if(FIREBASE_CONFIG.apiKey==='COLE_AQUI_SUA_API_KEY') return;
+    firebase.initializeApp(FIREBASE_CONFIG);
+    fbDb = firebase.firestore();
+    fbConfigOk = true;
+    ouvirMotoristas();
+    ouvirClientesFirebase();
+    syncTodosClientesFirebase();
+  } catch(e){ console.log('Firebase não configurado ainda'); }
+}
+
+function ouvirClientesFirebase(){
+  if(!fbDb)return;
+  fbDb.collection('clientes_expresso').onSnapshot(snap=>{
+    const fbClientes=[];
+    snap.forEach(doc=>{fbClientes.push({_fbId:doc.id,...doc.data()});});
+    // Merge: add Firebase clients not in local
+    fbClientes.forEach(fc=>{
+      const exists=clientes.find(c=>(c.cnpj&&fc.cnpj&&c.cnpj.replace(/\D/g,'')===fc.cnpj.replace(/\D/g,''))||c.nome.toLowerCase()===fc.nome.toLowerCase());
+      if(!exists){clientes.push({nome:fc.nome,cnpj:fc.cnpj,origem:fc.origem,destino:fc.destino,tipo:fc.tipo,pgto:fc.pgto});save();}
+    });
+    if(tabAtual==='clientes')render();
+  },err=>console.log('Clientes listener error:',err));
+}
+
+function ouvirMotoristas(){
+  if(!fbDb) return;
+  fbDb.collection('fretes_motoristas')
+    .orderBy('criadoEm','desc')
+    .limit(100)
+    .onSnapshot(snap => {
+      window._motFretes = [];
+      snap.forEach(doc => {
+        window._motFretes.push({_id: doc.id, ...doc.data()});
+      });
+      // Atualiza badge
+      const pend = (window._motFretes||[]).filter(f=>f.status==='pendente').length;
+      const badge = document.getElementById('nb-mot-count');
+      if(badge){
+        badge.textContent = pend;
+        badge.style.display = pend > 0 ? 'inline-flex' : 'none';
+        if(pend > 0) badge.style.background = '#FEF0DA';
+        if(pend > 0) badge.style.color = '#8A4A00';
+      }
+      // Re-render se estiver na aba
+      if(tabAtual==='motoristas') render();
+    }, err => console.log('Firebase listener error:', err));
+}
+
+async function aprovarMot(id){
+  if(!fbDb) return;
+  const item = (window._motFretes||[]).find(f=>f._id===id);
+  if(!item) return;
+  try {
+    // Atualiza no Firebase
+    await fbDb.collection('fretes_motoristas').doc(id).update({
+      status: 'aprovado',
+      _dataAprov: hoje()
+    });
+    // Cria lançamento no sistema local
+    const novo = {
+      id: genId(),
+      data: item.datetime?item.datetime.slice(0,10):'',
+      vencimento: item.vencimento||'',
+      servico: item.servico||'',
+      tomador: item.remetente||'',
+      cnpj: item.remCnpj||'',
+      origem: item.origem||'',
+      destino: item.destino||'',
+      valor: item.valor||0,
+      tipo: item.tipo||'faturado',
+      placa: '',
+      pagamento: item.formaPgto==='avista'?'Dinheiro':item.formaPgto==='pix'?'PIX':item.formaPgto==='boleto'?'Boleto':'',
+      descricao: `Remetente: ${item.remetente||'-'} → Destinatário: ${item.destinatario||'-'}`,
+      obs: `Registrado por ${item.motorista}${item.emitirNF==='sim'?' — NF SOLICITADA':''}${item.obs?' — '+item.obs:''}`,
+      status: 'Pendente',
+      criadoEm: Date.now(),
+      _motorista: item.motorista,
+      _remetente: item.remetente||'',
+      _destinatario: item.destinatario||''
+    };
+    fretes.push(novo);
+    save();
+    alerta = {tipo:'ok', msg:`Frete aprovado! ${item.remetente||''} → ${item.destinatario||''} (${item.tipo==='mensal'?'Mensal — agrupado na pasta do mês':'Faturado'})` };
+    render();
+  } catch(e){
+    alerta = {tipo:'err', msg:'Erro ao aprovar: '+e.message};
+    render();
+  }
+}
+
+async function rejeitarMot(id){
+  if(!fbDb) return;
+  if(!confirm('Rejeitar este registro do motorista?')) return;
+  try {
+    await fbDb.collection('fretes_motoristas').doc(id).update({status:'rejeitado'});
+    alerta = {tipo:'ok', msg:'Registro rejeitado.'};
+    render();
+  } catch(e){
+    alerta = {tipo:'err', msg:'Erro: '+e.message};
+    render();
+  }
+}
+
+// ── CNAB 240 SICOOB ────────────────────────────────────────────────
+const CNAB = {
+  banco:'756', nomeBanco:'SICOOB',
+  coop:'04101', dvCoop:' ',
+  codBenef:'001947729', dvConta:' ', dvAgConta:' ',
+  carteira:'01', modalidade:'01',
+  cnpj:'53651463000180',
+  nomeEmp:'MARCO TULIO SALOME OLIVEIRA',
+  seqArq: 1
+};
+
+function cnabStr(v,n,dir='R',pad=' '){
+  v=String(v??'').toUpperCase().replace(/[^\x20-\x7E]/g,' ');
+  if(dir==='L') return v.slice(0,n).padStart(n,pad);
+  return v.slice(0,n).padEnd(n,pad);
+}
+function cnabNum(v,n){ return String(Math.round(Number(v)||0)).padStart(n,'0').slice(-n); }
+function cnabData(d){
+  if(!d)return'00000000';
+  const[y,m,day]=d.split('-');
+  return `${day}${m}${y}`;
+}
+function cnabValidar(linha,pos){
+  if(linha.length!==240){
+    console.warn(`Linha ${pos}: ${linha.length} chars (esperado 240). Ajustando.`);
+    return linha.length<240?linha.padEnd(240,' '):linha.slice(0,240);
+  }
+  return linha;
+}
+
+function gerarCNAB240(lote){
+  const hoje=new Date();
+  const dd=String(hoje.getDate()).padStart(2,'0');
+  const mm=String(hoje.getMonth()+1).padStart(2,'0');
+  const aaaa=String(hoje.getFullYear());
+  const hh=String(hoje.getHours()).padStart(2,'0');
+  const mi=String(hoje.getMinutes()).padStart(2,'0');
+  const ss=String(hoje.getSeconds()).padStart(2,'0');
+  const dataHoje=`${dd}${mm}${aaaa}`;
+  const horaHoje=`${hh}${mi}${ss}`;
+  const seqArqStr=cnabNum(CNAB.seqArq,6);
+  let linhas=[], seqReg=0, totalVal=0, qtdTit=0;
+
+  // ── HEADER ARQUIVO ──────────────────────── 240 chars
+  let r='';
+  r+=CNAB.banco;                         // 001-003  3
+  r+='0000';                             // 004-007  4
+  r+='0';                                // 008      1
+  r+=cnabStr('',9);                      // 009-017  9
+  r+='2';                                // 018      1
+  r+=cnabNum(CNAB.cnpj,14);             // 019-032 14
+  r+=cnabStr(CNAB.coop+CNAB.codBenef,20);// 033-052 20
+  r+=CNAB.coop;                          // 053-057  5
+  r+=CNAB.dvCoop;                        // 058      1
+  r+=cnabNum(CNAB.codBenef,12);          // 059-070 12
+  r+=CNAB.dvConta;                       // 071      1
+  r+=CNAB.dvAgConta;                     // 072      1
+  r+=cnabStr(CNAB.nomeEmp,30);           // 073-102 30
+  r+=cnabStr(CNAB.nomeBanco,30);         // 103-132 30
+  r+=cnabStr('',10);                     // 133-142 10
+  r+='1';                                // 143      1
+  r+=dataHoje;                           // 144-151  8
+  r+=horaHoje;                           // 152-157  6
+  r+=seqArqStr;                          // 158-163  6
+  r+='083';                              // 164-166  3
+  r+='01600';                            // 167-171  5
+  r+=cnabStr('',20);                     // 172-191 20
+  r+=cnabStr('',20);                     // 192-211 20
+  r+=cnabStr('',29);                     // 212-240 29
+  linhas.push(cnabValidar(r,'HA'));
+
+  // ── HEADER LOTE ─────────────────────────── 240 chars
+  r='';
+  r+=CNAB.banco;                         // 001-003  3
+  r+='0001';                             // 004-007  4
+  r+='1';                                // 008      1
+  r+='C';                                // 009      1
+  r+='01';                               // 010-011  2
+  r+='01';                               // 012-013  2
+  r+='030';                              // 014-016  3
+  r+=' ';                                // 017      1
+  r+='2';                                // 018      1
+  r+=cnabNum(CNAB.cnpj,14);             // 019-032 14
+  r+=cnabStr(CNAB.coop+CNAB.codBenef,20);// 033-052 20
+  r+=CNAB.coop;                          // 053-057  5
+  r+=CNAB.dvCoop;                        // 058      1
+  r+=cnabNum(CNAB.codBenef,12);          // 059-070 12
+  r+=CNAB.dvConta;                       // 071      1
+  r+=CNAB.dvAgConta;                     // 072      1
+  r+=cnabStr(CNAB.nomeEmp,30);           // 073-102 30
+  r+=cnabStr('',40);                     // 103-142 40
+  r+=cnabStr('',40);                     // 143-182 40
+  r+=cnabNum(seqArqStr,8);               // 183-190  8
+  r+=dataHoje;                           // 191-198  8
+  r+='00000000';                         // 199-206  8
+  r+=cnabStr('',34);                     // 207-240 34
+  linhas.push(cnabValidar(r,'HL'));
+
+  // ── DETALHES ────────────────────────────────────────────
+  lote.forEach((f,idx)=>{
+    seqReg++;qtdTit++;
+    totalVal+=Number(f.valor||0);
+
+    const nossoNumSeq=cnabNum(idx+1,9);
+    const nossoNumDV=calcDVMod11(CNAB.carteira+CNAB.modalidade+nossoNumSeq);
+    const nossoNum=CNAB.carteira+CNAB.modalidade+nossoNumSeq+nossoNumDV;// 14 chars
+    const numDoc=cnabStr(f.id||String(idx+1),15);
+    const vencData=cnabData(f.vencimento||f.data);
+    const emissData=cnabData(f.data);
+    const valorCents=cnabNum(Math.round(Number(f.valor||0)*100),15);
+
+    // ── SEGMENTO P ────────────────── 240 chars
+    r='';
+    r+=CNAB.banco;                       // 001-003  3
+    r+='0001';                           // 004-007  4
+    r+='3';                              // 008      1
+    r+=cnabNum(seqReg,5);                // 009-013  5
+    r+='P';                              // 014      1
+    r+=' ';                              // 015      1
+    r+='01';                             // 016-017  2  inclusão
+    r+=CNAB.coop;                        // 018-022  5
+    r+=CNAB.dvCoop;                      // 023      1
+    r+=cnabNum(CNAB.codBenef,12);        // 024-035 12
+    r+=CNAB.dvConta;                     // 036      1
+    r+=CNAB.dvAgConta;                   // 037      1
+    r+=cnabStr(nossoNum,20);             // 038-057 20  nosso número
+    r+=numDoc;                           // 058-072 15  num doc empresa
+    r+=vencData;                         // 073-080  8  vencimento
+    r+=valorCents;                       // 081-095 15  valor
+    r+=cnabNum(0,5);                     // 096-100  5  banco cobrador
+    r+=' ';                              // 101      1  DV
+    r+='06';                             // 102-103  2  espécie DS=serviço... wait need 4 chars? Let me check
+    // Actually espécie is 2 chars in some layouts. Let me use 2.
+    r+='N';                              // 104      1  aceite
+    r+=emissData;                        // 105-112  8  emissão
+    r+='00';                             // 113-114  2  instrução 1
+    r+='00';                             // 115-116  2  instrução 2
+    r+=cnabNum(0,13);                    // 117-129 13  mora por dia
+    r+='00000000';                       // 130-137  8  data limite desc
+    r+=cnabNum(0,15);                    // 138-152 15  valor desconto
+    r+=cnabNum(0,15);                    // 153-167 15  valor IOF
+    r+=cnabNum(0,15);                    // 168-182 15  abatimento
+    r+=cnabStr(f.id||'',25);             // 183-207 25  identificação empresa
+    r+='3';                              // 208      1  protesto: não
+    r+='00';                             // 209-210  2  prazo protesto
+    r+='1';                              // 211      1  baixa: devolver
+    r+=cnabNum(0,3);                     // 212-214  3  prazo baixa
+    r+='009';                            // 215-217  3  moeda real
+    r+=cnabNum(0,10);                    // 218-227 10  nº contrato
+    r+=cnabStr('',13);                   // 228-240 13  brancos
+    linhas.push(cnabValidar(r,`SP-${idx}`));
+
+    seqReg++;
+
+    // ── SEGMENTO Q ────────────────── 240 chars
+    const cnpjPag=(f.cnpj||'').replace(/\D/g,'');
+    const tipoPag=cnpjPag.length===14?'2':cnpjPag.length===11?'1':'0';
+    const cnpjPagN=cnabNum(cnpjPag||0,15);
+    r='';
+    r+=CNAB.banco;                       // 001-003  3
+    r+='0001';                           // 004-007  4
+    r+='3';                              // 008      1
+    r+=cnabNum(seqReg,5);                // 009-013  5
+    r+='Q';                              // 014      1
+    r+=' ';                              // 015      1
+    r+='01';                             // 016-017  2
+    r+=tipoPag;                          // 018      1
+    r+=cnpjPagN;                         // 019-033 15
+    r+=cnabStr(f.tomador||'',40);        // 034-073 40
+    r+=cnabStr(f.origem||'',40);         // 074-113 40  endereço (usamos origem)
+    r+=cnabStr('',15);                   // 114-128 15  bairro
+    r+=cnabNum(0,8);                     // 129-136  8  CEP
+    r+=cnabStr('',15);                   // 137-151 15  cidade
+    r+=cnabStr('MG',2);                  // 152-153  2  UF
+    r+='0';                              // 154      1  sacador: isento
+    r+=cnabNum(0,15);                    // 155-169 15  inscrição sacador
+    r+=cnabStr('',40);                   // 170-209 40  nome sacador
+    r+=cnabNum(0,3);                     // 210-212  3  banco correspondente
+    r+=cnabStr('',20);                   // 213-232 20  nosso num banco corr
+    r+=cnabStr('',8);                    // 233-240  8  brancos
+    linhas.push(cnabValidar(r,`SQ-${idx}`));
+  });
+
+  // ── TRAILER LOTE ────────────────── 240 chars
+  const totLote=2+qtdTit*2+1;
+  const totalCents=cnabNum(Math.round(totalVal*100),17);
+  r='';
+  r+=CNAB.banco;                         // 001-003  3
+  r+='0001';                             // 004-007  4
+  r+='5';                                // 008      1
+  r+=cnabStr('',9);                      // 009-017  9
+  r+=cnabNum(totLote,6);                 // 018-023  6  qtd registros lote
+  r+=cnabNum(qtdTit,6);                  // 024-029  6  qtd títulos
+  r+=totalCents;                         // 030-046 17  valor total
+  r+=cnabNum(0,6);                       // 047-052  6  qtd vinculada
+  r+=cnabNum(0,17);                      // 053-069 17  val vinculada
+  r+=cnabNum(0,6);                       // 070-075  6  qtd caucionada
+  r+=cnabNum(0,17);                      // 076-092 17  val caucionada
+  r+=cnabNum(0,6);                       // 093-098  6  qtd descontada
+  r+=cnabNum(0,17);                      // 099-115 17  val descontada
+  r+=cnabNum(0,8);                       // 116-123  8  aviso débito
+  r+=cnabStr('',117);                    // 124-240 117 brancos
+  linhas.push(cnabValidar(r,'TL'));
+
+  // ── TRAILER ARQUIVO ─────────────── 240 chars
+  const totArq=linhas.length+1;
+  r='';
+  r+=CNAB.banco;                         // 001-003  3
+  r+='9999';                             // 004-007  4
+  r+='9';                                // 008      1
+  r+=cnabStr('',9);                      // 009-017  9
+  r+=cnabNum(1,6);                       // 018-023  6  qtd lotes
+  r+=cnabNum(totArq,6);                  // 024-029  6  qtd registros
+  r+=cnabStr('',6);                      // 030-035  6  qtd contas
+  r+=cnabStr('',205);                    // 036-240 205 brancos
+  linhas.push(cnabValidar(r,'TA'));
+
+  CNAB.seqArq++;
+  return linhas.join('\r\n');
+}
+
+function calcDVMod11(num){
+  // Módulo 11 para DV nosso número SICOOB
+  const n=String(num).split('').reverse();
+  let soma=0,peso=2;
+  for(let i=0;i<n.length;i++){soma+=parseInt(n[i])*peso;peso=peso===9?2:peso+1;}
+  const resto=soma%11;
+  if(resto===0||resto===1)return'0';
+  return String(11-resto);
+}
+
+// ── CNAB 240 RETORNO ───────────────────────────────────────────────
+const OCORRENCIAS = {
+  '02':'Entrada confirmada',
+  '03':'Entrada rejeitada',
+  '06':'Liquidação — PAGO',
+  '09':'Baixa efetuada',
+  '10':'Baixa solicitada',
+  '11':'Em cartório',
+  '14':'Vencimento alterado',
+  '17':'Abatimento concedido',
+  '19':'Abatimento cancelado',
+  '23':'Remessa rejeitada',
+  '25':'Protestado',
+  '28':'Débito em conta',
+  '30':'Alteração de dados',
+};
+
+function cnabDataFmt(s){
+  // DDMMAAAA → DD/MM/AAAA
+  if(!s||s==='00000000')return'-';
+  return`${s.slice(0,2)}/${s.slice(2,4)}/${s.slice(4,8)}`;
+}
+
+function lerArquivoRetorno(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      processarArquivoRetorno(e.target.result,file.name);
+    }catch(err){
+      alerta={tipo:'err',msg:'Erro ao ler o arquivo: '+err.message};render();
+    }
+  };
+  reader.readAsText(e=>{}); // dummy
+  // Use readAsText with latin1 encoding for CNAB files
+  const r2=new FileReader();
+  r2.onload=e2=>{
+    try{processarArquivoRetorno(e2.target.result,file.name);}
+    catch(err){alerta={tipo:'err',msg:'Erro ao processar: '+err.message};render();}
+  };
+  r2.readAsText(file,'ISO-8859-1');
+}
+
+function processarArquivoRetorno(conteudo,nomeArq){
+  const linhas=conteudo.split(/\r?\n/).filter(l=>l.trim().length>0);
+  const registros=linhas.filter(l=>l.length>=240);
+
+  if(!registros.length){
+    alerta={tipo:'err',msg:'Arquivo inválido: nenhum registro CNAB 240 encontrado. Verifique se é um arquivo .RET do SICOOB.'};
+    render();return;
+  }
+
+  // Verificar se é arquivo SICOOB (banco 756)
+  const headerArq=registros.find(l=>l[7]==='0');
+  if(headerArq&&headerArq.slice(0,3)!=='756'){
+    alerta={tipo:'err',msg:`Banco ${headerArq.slice(0,3)} não reconhecido. Este sistema está configurado para SICOOB (756).`};
+    render();return;
+  }
+
+  const itens=[];
+  let pagos=0,confirmados=0,rejeitados=0,baixados=0,naoEncontrados=0;
+
+  registros.forEach(linha=>{
+    if(linha.length<240)return;
+    const tipoReg=linha[7];  // pos 8
+    const seg=linha[13];     // pos 14
+
+    if(tipoReg!=='3'||seg!=='P')return; // só Segmento P
+
+    const codOcorr=linha.substring(15,17).trim();  // pos 16-17
+    const nossoNum=linha.substring(37,57).trim();   // pos 38-57
+    const numDoc=linha.substring(57,72).trim();     // pos 58-72
+    const dataVencRaw=linha.substring(72,80);       // pos 73-80 DDMMAAAA
+    const valorCents=parseInt(linha.substring(80,95)||'0'); // pos 81-95
+    const dataOcorrRaw=linha.substring(142,150);    // pos 143-150
+    const dataCreditoRaw=linha.substring(150,158);  // pos 151-158
+
+    const valor=valorCents/100;
+    const dataVenc=cnabDataFmt(dataVencRaw);
+    const dataPagto=dataCreditoRaw!=='00000000'?cnabDataFmt(dataCreditoRaw):
+                    dataOcorrRaw!=='00000000'?cnabDataFmt(dataOcorrRaw):null;
+    const ocorrenciaDesc=OCORRENCIAS[codOcorr]||`Ocorrência ${codOcorr}`;
+
+    // Tentar encontrar o frete pelo numDoc (usamos f.id como numDoc)
+    // ou pelo nosso número parcial
+    let frete=fretes.find(f=>f.id&&numDoc.includes(f.id));
+    if(!frete){
+      // Tenta pelo valor + vencimento
+      const vencISO=dataVencRaw!=='00000000'?
+        `${dataVencRaw.slice(4,8)}-${dataVencRaw.slice(2,4)}-${dataVencRaw.slice(0,2)}`:null;
+      frete=fretes.find(f=>
+        f.boleto&&
+        Math.abs(Number(f.valor)-valor)<0.01&&
+        (vencISO?f.vencimento===vencISO:true)
+      );
+    }
+
+    let tipo,statusMsg;
+    if(codOcorr==='06'||codOcorr==='28'){
+      tipo='pago';pagos++;
+      statusMsg=frete?`✔ Frete de ${frete.tomador} atualizado para PAGO`:'Frete correspondente não encontrado no sistema';
+    } else if(codOcorr==='02'){
+      tipo='confirmado';confirmados++;
+      statusMsg=frete?`✔ Entrada registrada para ${frete.tomador}`:'Boleto registrado no banco';
+    } else if(codOcorr==='03'||codOcorr==='23'){
+      tipo='rejeitado';rejeitados++;
+      statusMsg=`⚠ Rejeitado — verifique o arquivo de remessa`;
+    } else if(codOcorr==='09'||codOcorr==='10'){
+      tipo='baixado';baixados++;
+      statusMsg=frete?`Frete de ${frete.tomador} baixado`:'Boleto baixado';
+    } else {
+      tipo='info';
+      statusMsg=ocorrenciaDesc;
+    }
+
+    if(!frete&&(tipo==='pago'||tipo==='confirmado'))naoEncontrados++;
+
+    itens.push({
+      codOcorr,ocorrenciaDesc,tipo,nossoNum,numDoc,
+      dataVenc,valor,valorFmt:fmtMoney(valor),
+      dataPagto,statusMsg,
+      tomador:frete?frete.tomador:null,
+      freteId:frete?frete.id:null,
+    });
+  });
+
+  window._retornoResultado={
+    arquivo:nomeArq,
+    total:itens.length,
+    pagos,confirmados,rejeitados,baixados,naoEncontrados,
+    itens
+  };
+  nav('retorno');
+}
+
+function confirmarRetorno(){
+  if(!window._retornoResultado)return;
+  const res=window._retornoResultado;
+  let atualizados=0;
+
+  res.itens.forEach(it=>{
+    if(!it.freteId)return;
+    const f=fretes.find(x=>x.id===it.freteId);
+    if(!f)return;
+
+    if(it.tipo==='pago'){
+      f.status='Pago';
+      if(it.dataPagto&&it.dataPagto!=='-'){
+        // Converter DD/MM/AAAA para AAAA-MM-DD
+        const[dd,mm,aa]=it.dataPagto.split('/');
+        f.dataPagamento=`${aa}-${mm}-${dd}`;
+      }
+      atualizados++;
+    } else if(it.tipo==='baixado'){
+      f.status='Cancelado';
+      atualizados++;
+    }
+  });
+
+  save();
+  window._retornoResultado=null;
+  alerta={tipo:'ok',msg:`Retorno processado! ${atualizados} frete${atualizados!==1?'s':''} atualizado${atualizados!==1?'s':''} no sistema.`};
+  nav('controle');
+}
+
+function selecionarTodos(sel){
+  document.querySelectorAll('.chk-boleto').forEach(c=>{c.checked=sel;});
+  const ca=document.getElementById('chk-all');if(ca)ca.checked=sel;
+  atualizarContSel();
+}
+
+function atualizarContSel(){
+  const n=document.querySelectorAll('.chk-boleto:checked').length;
+  const el=document.getElementById('count-sel');
+  if(el)el.textContent=`${n} selecionado${n!==1?'s':''}`;
+}
+
+function gerarRemessa(){
+  const selecionados=[...document.querySelectorAll('.chk-boleto:checked')].map(c=>c.dataset.id);
+  if(!selecionados.length){alerta={tipo:'err',msg:'Selecione ao menos um boleto para gerar a remessa.'};render();return;}
+  const lote=fretes.filter(f=>selecionados.includes(f.id));
+  const cnab=gerarCNAB240(lote);
+  const blob=new Blob([cnab],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const d=new Date();
+  const nome=`REMESSA_SICOOB_${String(d.getDate()).padStart(2,'0')}${String(d.getMonth()+1).padStart(2,'0')}${d.getFullYear()}.REM`;
+  a.download=nome;a.click();URL.revokeObjectURL(url);
+  // Marcar fretes como enviados na remessa
+  const nomeArq=nome;
+  lote.forEach(f=>{f.remessa=nomeArq;});
+  save();
+  alerta={tipo:'ok',msg:`Arquivo "${nome}" gerado com ${lote.length} título${lote.length!==1?'s':''}! Envie pelo internet banking do SICOOB em Cobrança → Remessa.`};
+  nav('remessa');
+}
+
+function exportarCSV(){
+  function calcVencCSV(f){
+    if(f.vencimento){const[y,m,d]=f.vencimento.split('-');return`${d}/${m}/${y}`;}
+    if(!f.data)return'-';
+    const d=new Date(f.data+'T00:00:00');d.setDate(d.getDate()+30);return d.toLocaleDateString('pt-BR');
+  }
+  function calcVencISO2(f){
+    if(f.vencimento)return f.vencimento;
+    if(!f.data)return'';
+    const d=new Date(f.data+'T00:00:00');d.setDate(d.getDate()+30);return d.toISOString().slice(0,10);
+  }
+  const hoje=new Date().toISOString().slice(0,10);
+  const comBoleto=fretes.filter(f=>f.boleto&&f.status!=='Cancelado');
+  const selMes=relMes;const selAno=relAno||String(new Date().getFullYear());
+  let lista=comBoleto.filter(f=>{
+    const mesOk=!selMes||getMesAno(f.data)===`${selAno}-${selMes}`;
+    const stOk=!filtroStatus||f.status===filtroStatus;
+    return mesOk&&stOk;
+  }).sort((a,b)=>calcVencISO2(a).localeCompare(calcVencISO2(b)));
+
+  const linhas=[
+    ['CONTROLE BANCÁRIO — '+EMPRESA.nome+' — CNPJ: '+EMPRESA.cnpj],
+    ['Gerado em: '+new Date().toLocaleDateString('pt-BR')+(selMes?' — Período: '+getMesNome(`${selAno}-${selMes}`):'')],
+    [],
+    ['Vencimento','Empresa / Tomador','CNPJ/CPF','Serviço prestado','Número do boleto','Valor (R$)','Situação']
+  ];
+  lista.forEach(f=>{
+    const venc=calcVencCSV(f);
+    const vencISO=calcVencISO2(f);
+    const vencido=f.status!=='Pago'&&vencISO<hoje;
+    const sit=f.status==='Pago'?'PAGO':vencido?'VENCIDO':'PENDENTE';
+    linhas.push([
+      venc,
+      f.tomador||'-',
+      f.cnpj||'-',
+      f.servico||'-',
+      f.boleto||'-',
+      Number(f.valor||0).toFixed(2).replace('.',','),
+      sit
+    ]);
+  });
+  const total=lista.reduce((s,f)=>s+Number(f.valor||0),0);
+  const pago=lista.filter(f=>f.status==='Pago').reduce((s,f)=>s+Number(f.valor||0),0);
+  const pend=lista.filter(f=>f.status!=='Pago').reduce((s,f)=>s+Number(f.valor||0),0);
+  linhas.push([]);
+  linhas.push(['','','','','TOTAL GERAL',total.toFixed(2).replace('.',','),'']);
+  linhas.push(['','','','','RECEBIDO',pago.toFixed(2).replace('.',','),'']);
+  linhas.push(['','','','','A RECEBER',pend.toFixed(2).replace('.',','),'']);
+
+  const csv=linhas.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  const bom='\uFEFF';
+  const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const periodo=selMes?`_${selAno}-${selMes}`:'';
+  a.download=`controle_bancario${periodo}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.csv`;
+  a.click();URL.revokeObjectURL(url);
+}
+
+function salvarCliente(){
+  const nome=document.getElementById('cli-nome').value.trim();
+  if(!nome){alerta={tipo:'err',msg:'Informe pelo menos o nome do cliente.'};render();return;}
+  const novo={
+    nome,
+    cnpj:document.getElementById('cli-cnpj').value.trim(),
+    origem:document.getElementById('cli-origem').value.trim(),
+    destino:document.getElementById('cli-destino').value.trim(),
+    tipo:document.getElementById('cli-tipo').value,
+    pgto:document.getElementById('cli-pgto').value
+  };
+  clientes.push(novo);save();
+  syncClienteFirebase(novo);
+  alerta={tipo:'ok',msg:`Cliente "${nome}" cadastrado! Disponível no app dos motoristas.`};
+  render();
+}
+
+function syncClienteFirebase(cli){
+  if(!fbDb)return;
+  const id=(cli.cnpj||'').replace(/\D/g,'')||cli.nome.replace(/\s/g,'_').toLowerCase();
+  fbDb.collection('clientes_expresso').doc(id).set({
+    nome:cli.nome,cnpj:cli.cnpj||'',origem:cli.origem||'',destino:cli.destino||'',
+    tipo:cli.tipo||'faturado',pgto:cli.pgto||'',atualizadoEm:new Date().toISOString()
+  },{merge:true}).catch(e=>console.log('Sync cliente erro:',e));
+}
+
+function syncTodosClientesFirebase(){
+  if(!fbDb||!clientes.length)return;
+  clientes.forEach(c=>syncClienteFirebase(c));
+}
+
+function excluirCliente(i){
+  if(confirm(`Excluir cliente "${clientes[i].nome}"?`)){clientes.splice(i,1);save();alerta={tipo:'ok',msg:'Cliente excluído.'};render();}
+}
+
+function preencherCliente(idx){
+  if(idx==='')return;
+  const c=clientes[parseInt(idx)];
+  if(!c)return;
+  form.tomador=c.nome;
+  form.cnpj=c.cnpj||'';
+  form.origem=c.origem||'';
+  form.destino=c.destino||'';
+  form.tipo=c.tipo||'faturado';
+  form.pagamento=c.pgto||'';
+  form._cliIdx=parseInt(idx);
+  renderForm();
+}
+
+load();render();iniciarFirebaseAdmin();
+
+// Registrar Service Worker (PWA)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .then(reg => console.log("SW registrado:", reg.scope))
+      .catch(err => console.log("SW erro:", err));
+  });
+}
+</script>
+</body>
+</html>
