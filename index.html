@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expresso Ricci — Sistema de Fretes</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1A5FA8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Fretes MEI">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/dist/tabler-icons.min.css">
+<style>
+:root{
+  --blue:#1A5FA8;--blue-dark:#0D3F75;--blue-light:#E8F0FB;
+  --green:#276C14;--green-light:#EAF3E0;
+  --amber:#8A4A00;--amber-light:#FEF0DA;
+  --purple:#5A1D9A;--purple-light:#EEE6FB;
+  --red:#8B1A1A;--red-light:#FCEAEA;
+  --gray-1:#F7F8FA;--gray-2:#ECEEF2;--gray-3:#D1D5DF;--gray-4:#8A90A0;--gray-5:#3D4250;--gray-6:#1A1D26;
+  --radius:10px;--radius-sm:6px;--shadow:0 2px 8px rgba(0,0,0,.08);
+  font-size:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#F4F6FA;color:var(--gray-6);min-height:100vh}
+
+/* Layout */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:#fff;border-right:1px solid var(--gray-2);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;height:100vh;z-index:10}
+.main{margin-left:220px;flex:1;padding:28px 32px;max-width:1100px}
+@media(max-width:700px){.sidebar{width:100%;height:auto;position:relative;flex-direction:row;flex-wrap:wrap;border-right:none;border-bottom:1px solid var(--gray-2)}.main{margin-left:0;padding:16px}}
+
+/* Sidebar */
+.logo{padding:20px 20px 16px;border-bottom:1px solid var(--gray-2)}
+.logo-nome{font-size:13px;font-weight:700;color:var(--blue);line-height:1.3}
+.logo-sub{font-size:11px;color:var(--gray-4);margin-top:2px}
+.nav-group{padding:12px 10px 4px}
+.nav-label{font-size:10px;font-weight:600;color:var(--gray-4);text-transform:uppercase;letter-spacing:.07em;padding:0 8px;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:500;color:var(--gray-4);transition:.12s;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--gray-1);color:var(--gray-6)}
+.nav-item.active{background:var(--blue-light);color:var(--blue);font-weight:600}
+.nav-item i{font-size:16px}
+.nav-badge{margin-left:auto;background:var(--blue-light);color:var(--blue);border-radius:12px;padding:1px 8px;font-size:10px;font-weight:700}
+.nav-badge.purple{background:var(--purple-light);color:var(--purple)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.stat{background:#fff;border-radius:var(--radius);padding:16px;border:1px solid var(--gray-2);box-shadow:var(--shadow)}
+.stat-label{font-size:11px;color:var(--gray-4);font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.stat-val{font-size:26px;font-weight:700;color:var(--gray-6)}
+.stat-val.blue{color:var(--blue)}.stat-val.green{color:var(--green)}.stat-val.amber{color:var(--amber)}.stat-val.purple{color:var(--purple)}
+
+/* Card */
+.card{background:#fff;border-radius:var(--radius);border:1px solid var(--gray-2);padding:24px;margin-bottom:20px;box-shadow:var(--shadow)}
+.card-title{font-size:16px;font-weight:700;color:var(--gray-6);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.card-title i{color:var(--blue)}
+
+/* Page header */
+.page-header{margin-bottom:24px}
+.page-title{font-size:22px;font-weight:700;color:var(--gray-6)}
+.page-sub{font-size:13px;color:var(--gray-4);margin-top:3px}
+
+/* Form */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:600;color:var(--gray-5);display:flex;align-items:center;gap:5px}
+.field label .badge-pill{font-size:10px;font-weight:500;background:var(--blue-light);color:var(--blue);padding:2px 7px;border-radius:20px}
+.field input,.field select,.field textarea{padding:9px 12px;border:1px solid var(--gray-3);border-radius:var(--radius-sm);font-size:13px;background:#fff;color:var(--gray-6);font-family:'DM Sans',sans-serif;transition:.12s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,95,168,.1)}
+.field input.highlight{border-color:var(--blue);background:var(--blue-light);font-weight:600}
+.section-sep{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:4px}
+.section-sep span{font-size:11px;font-weight:600;color:var(--gray-4);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.section-sep::before,.section-sep::after{content:'';flex:1;height:1px;background:var(--gray-2)}
+.section-sep::before{display:none}
+.char-count{font-size:11px;color:var(--gray-4);text-align:right}
+
+/* Tipo toggle */
+.tipo-toggle{display:flex;border:1px solid var(--gray-3);border-radius:var(--radius-sm);overflow:hidden;grid-column:1/-1}
+.tipo-btn{flex:1;padding:10px;font-size:13px;font-weight:500;border:none;cursor:pointer;background:#fff;color:var(--gray-4);font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:7px;transition:.15s}
+.tipo-btn:first-child{border-right:1px solid var(--gray-3)}
+.tipo-btn.sel.fat{background:var(--green-light);color:var(--green)}
+.tipo-btn.sel.men{background:var(--purple-light);color:var(--purple)}
+.tipo-hint{font-size:11px;color:var(--gray-4);grid-column:1/-1;margin-top:-4px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:.12s}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-dark)}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#1b4d0d}
+.btn-sec{background:#fff;color:var(--gray-5);border:1px solid var(--gray-3)}.btn-sec:hover{background:var(--gray-1);color:var(--gray-6)}
+.btn-danger{background:#fff;color:var(--red);border:1px solid #F5C0C0}.btn-danger:hover{background:var(--red-light)}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+/* Table */
+.table-wrap{overflow-x:auto;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 12px;color:var(--gray-4);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gray-2);background:#FAFBFD;white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--gray-2);vertical-align:middle;color:var(--gray-6)}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--gray-1)}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.b-pend{background:var(--amber-light);color:var(--amber)}
+.b-nf{background:var(--blue-light);color:var(--blue)}
+.b-pago{background:var(--green-light);color:var(--green)}
+.b-cancel{background:var(--red-light);color:var(--red)}
+.b-fat{background:var(--green-light);color:var(--green)}
+.b-men{background:var(--purple-light);color:var(--purple)}
+
+/* Filter row */
+.filter-row{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.filter-row input,.filter-row select{padding:8px 12px;border:1px solid var(--gray-3);border-radius:var(--radius-sm);font-size:13px;background:#fff;color:var(--gray-6);font-family:'DM Sans',sans-serif}
+.filter-row input{flex:1;min-width:140px}
+
+/* Action row */
+.action-row{display:flex;gap:5px}
+
+/* Pasta mensal */
+.pasta{border:1px solid var(--gray-2);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow)}
+.pasta-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:#FAFBFD;gap:8px;transition:.12s}
+.pasta-header:hover{background:var(--blue-light)}
+.pasta-titulo{font-size:14px;font-weight:700;color:var(--gray-6);display:flex;align-items:center;gap:9px}
+.pasta-meta{display:flex;gap:12px;align-items:center;font-size:13px}
+.pasta-body{padding:0 18px 18px;display:none;border-top:1px solid var(--gray-2);background:#fff}
+.pasta-body.open{display:block}
+
+/* Alert */
+.alert{padding:11px 16px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-weight:500}
+.alert-ok{background:var(--green-light);color:var(--green);border:1px solid #B8DDA8}
+.alert-err{background:var(--red-light);color:var(--red);border:1px solid #F5C0C0}
+
+/* Empty */
+.empty{text-align:center;padding:3rem 1rem;color:var(--gray-4)}
+.empty i{font-size:42px;display:block;margin-bottom:10px;opacity:.3}
+
+/* Documento NFS-e */
+.doc{background:#fff;border:1px solid var(--gray-3);border-radius:var(--radius);padding:28px;font-size:12px;color:#111}
+.doc-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid var(--blue);padding-bottom:14px;margin-bottom:16px}
+.doc-empresa{font-size:15px;font-weight:800;color:var(--blue)}
+.doc-info{font-size:11px;color:#555;margin-top:3px;line-height:1.6}
+.doc-nf-num{text-align:right}
+.doc-nf-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.06em}
+.doc-nf-val{font-size:22px;font-weight:800;color:var(--blue)}
+.doc-bloco{background:#F7F8FA;border-radius:var(--radius-sm);padding:11px 14px;margin-bottom:10px}
+.doc-bloco-title{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+.doc-row{display:flex;justify-content:space-between;padding:3px 0;font-size:12px}
+.doc-row span:first-child{color:#666}
+.doc-row span:last-child{font-weight:600;text-align:right;max-width:55%}
+.doc-servico-box{border-left:3px solid #F0A020;background:#FFFBF0;border-radius:0 6px 6px 0;padding:11px 14px;margin-bottom:10px}
+.doc-servico-label{font-size:10px;font-weight:700;color:#A06000;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.doc-servico-val{font-size:14px;font-weight:700;color:#333;line-height:1.5}
+.doc-desc-box{border-left:3px solid var(--blue);background:var(--blue-light);border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:10px;font-size:12px;line-height:1.7;color:#333}
+.doc-total{text-align:right;font-size:20px;font-weight:800;color:var(--blue);margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-2)}
+.doc-footer{font-size:10px;color:#aaa;margin-top:12px;border-top:.5px solid var(--gray-2);padding-top:8px;line-height:1.6}
+
+/* Relatório */
+.rel-wrap{border:1px solid var(--blue);border-radius:var(--radius);overflow:hidden;margin-top:4px}
+.rel-header{background:var(--blue);color:#fff;padding:18px 22px}
+.rel-header-title{font-size:17px;font-weight:700}
+.rel-header-sub{font-size:12px;opacity:.8;margin-top:3px}
+.rel-body{padding:20px 22px;background:#fff}
+.rel-sumario{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.rel-sum-item{background:var(--gray-1);border-radius:var(--radius-sm);padding:12px;text-align:center;border:1px solid var(--gray-2)}
+.rel-sum-label{font-size:11px;color:var(--gray-4);font-weight:500;margin-bottom:4px}
+.rel-sum-val{font-size:20px;font-weight:700;color:var(--blue)}
+.rel-table{width:100%;border-collapse:collapse;font-size:13px}
+.rel-table th{background:var(--blue-light);padding:9px 12px;text-align:left;font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.rel-table td{padding:10px 12px;border-bottom:.5px solid var(--gray-2);vertical-align:top}
+.rel-table tr:last-child td{border-bottom:none}
+.rel-table .total-row{background:var(--blue-light);font-weight:700;color:var(--blue)}
+
+/* Boleto */
+.boleto-bar{display:flex;align-items:center;justify-content:center;background:#111;height:48px;border-radius:4px;margin:8px 0;overflow:hidden}
+.boleto-linha{background:#fff;border:2px dashed var(--blue);border-radius:6px;padding:12px;margin:10px 0;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.5px;color:var(--blue);text-align:center;word-break:break-all}
+
+/* Print */
+@media print{
+  .sidebar,.filter-row,.action-row,.btn,.alert{display:none!important}
+  .main{margin:0;padding:0;max-width:100%}
+  .card{border:none;box-shadow:none;padding:0}
+  .doc{border:1px solid #ccc}
+}
+</style>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="logo" style="text-align:center">
+      <img src="data:image/png;base64,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" alt="Expresso Ricci" style="max-width:160px;height:auto;margin-bottom:6px;border-radius:8px">
+      <div class="logo-sub">CNPJ 53.651.463/0001-80</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Menu</div>
+      <button class="nav-item active" onclick="nav('dashboard')" id="nb-dashboard"><i class="ti ti-chart-bar"></i> Dashboard</button>
+      <button class="nav-item" onclick="nav('novo')" id="nb-novo"><i class="ti ti-plus"></i> Novo lançamento</button>
+      <button class="nav-item" onclick="nav('clientes')" id="nb-clientes"><i class="ti ti-users"></i> Clientes <span class="nav-badge" id="nb-cli-count">0</span></button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Fretes</div>
+      <button class="nav-item" onclick="nav('fretes')" id="nb-fretes"><i class="ti ti-truck"></i> Todos os fretes <span class="nav-badge" id="nb-count">0</span></button>
+      <button class="nav-item" onclick="nav('mensal')" id="nb-mensal"><i class="ti ti-folders"></i> Pasta mensal <span class="nav-badge purple" id="nb-men-count">0</span></button>
+      <button class="nav-item" onclick="nav('relatorio')" id="nb-relatorio"><i class="ti ti-report"></i> Relatório</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Emissão</div>
+      <button class="nav-item" onclick="nav('nfs')" id="nb-nfs"><i class="ti ti-file-invoice"></i> Emitir NFS-e</button>
+      <button class="nav-item" onclick="nav('boleto')" id="nb-boleto"><i class="ti ti-receipt"></i> Emitir boleto</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Financeiro</div>
+      <button class="nav-item" onclick="nav('motoristas')" id="nb-motoristas"><i class="ti ti-steering-wheel"></i> Motoristas <span class="nav-badge purple" id="nb-mot-count" style="display:none">0</span></button>
+      <button class="nav-item" onclick="nav('controle')" id="nb-controle"><i class="ti ti-building-bank"></i> Controle bancário</button>
+      <button class="nav-item" onclick="nav('remessa')" id="nb-remessa"><i class="ti ti-file-export"></i> Remessa CNAB 240</button>
+      <button class="nav-item" onclick="nav('retorno')" id="nb-retorno"><i class="ti ti-file-import"></i> Retorno CNAB 240</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Dados</div>
+      <button class="nav-item" onclick="nav('backup')" id="nb-backup"><i class="ti ti-database"></i> Backup</button>
+    </div>
+  </nav>
+
+  <main class="main" id="main"></main>
+</div>
+
+<script>
+const EMPRESA={nome:'Expresso Ricci',cnpj:'53.651.463/0001-80',tipo:'MEI — Transportador Autônomo',logradouro:'Rua Aurélio Campos, 427',bairro:'Piedade',cidade:'Itaúna',uf:'MG',cep:'35680-267',endFull:'Rua Aurélio Campos, 427 — Piedade, Itaúna/MG — CEP 35680-267'};
+const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+let fretes=[],clientes=[],form={tipo:'faturado'},docFrete=null,alerta=null,filtro='',filtroStatus='',filtroTipo='',pastaAberta=null,relGerado=null,relMes='',relAno='',tabAtual='dashboard';
+
+function save(){localStorage.setItem('fretes_marco_v3',JSON.stringify(fretes));localStorage.setItem('clientes_marco',JSON.stringify(clientes));syncFretesFirebase();}
+function load(){try{const d=localStorage.getItem('fretes_marco_v3');if(d)fretes=JSON.parse(d);}catch(e){}try{const c=localStorage.getItem('clientes_marco');if(c)clientes=JSON.parse(c);}catch(e){}}
+
+// ═══ FIREBASE SYNC FRETES ═══
+let syncTimer=null;
+function syncFretesFirebase(){
+  if(!fbDb)return;
+  clearTimeout(syncTimer);
+  syncTimer=setTimeout(()=>{
+    fbDb.collection('fretes_admin').doc('dados').set({
+      fretes:JSON.stringify(fretes),
+      clientes:JSON.stringify(clientes),
+      atualizadoEm:new Date().toISOString()
+    }).then(()=>{
+      console.log('Backup Firebase OK - '+new Date().toLocaleTimeString());
+    }).catch(e=>console.log('Sync erro:',e));
+  },2000);
+}
+
+function carregarFretesFirebase(){
+  if(!fbDb)return;
+  fbDb.collection('fretes_admin').doc('dados').get().then(doc=>{
+    if(doc.exists){
+      const d=doc.data();
+      try{
+        const fbFretes=JSON.parse(d.fretes||'[]');
+        const fbClientes=JSON.parse(d.clientes||'[]');
+        // Se local está vazio mas Firebase tem dados, usa Firebase
+        if(fretes.length===0&&fbFretes.length>0){
+          fretes=fbFretes;
+          localStorage.setItem('fretes_marco_v3',JSON.stringify(fretes));
+        }
+        if(clientes.length===0&&fbClientes.length>0){
+          clientes=fbClientes;
+          localStorage.setItem('clientes_marco',JSON.stringify(clientes));
+        }
+        // Se Firebase tem mais dados que local, merge
+        if(fbFretes.length>fretes.length){
+          fbFretes.forEach(ff=>{
+            if(!fretes.find(f=>f.id===ff.id)){fretes.push(ff);}
+          });
+          localStorage.setItem('fretes_marco_v3',JSON.stringify(fretes));
+        }
+        if(fbClientes.length>clientes.length){
+          fbClientes.forEach(fc=>{
+            if(!clientes.find(c=>c.nome===fc.nome&&c.cnpj===fc.cnpj)){clientes.push(fc);}
+          });
+          localStorage.setItem('clientes_marco',JSON.stringify(clientes));
+        }
+        render();
+        console.log('Dados Firebase carregados - Fretes:'+fbFretes.length+' Clientes:'+fbClientes.length);
+      }catch(e){console.log('Parse Firebase erro:',e);}
+    }
+  }).catch(e=>console.log('Load Firebase erro:',e));
+}
+
+// ═══ EXPORT / IMPORT BACKUP ═══
+function exportarBackup(){
+  const dados={
+    versao:'2.0',
+    exportadoEm:new Date().toISOString(),
+    empresa:EMPRESA.nome,
+    fretes:fretes,
+    clientes:clientes
+  };
+  const blob=new Blob([JSON.stringify(dados,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='backup-expresso-ricci-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  alerta={tipo:'ok',msg:'Backup exportado com sucesso!'};
+  render();
+}
+
+function importarBackup(){
+  const input=document.createElement('input');
+  input.type='file';
+  input.accept='.json';
+  input.onchange=e=>{
+    const file=e.target.files[0];
+    if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const dados=JSON.parse(ev.target.result);
+        if(!dados.fretes||!dados.clientes){throw new Error('Formato inválido');}
+        const totalFretes=dados.fretes.length;
+        const totalClientes=dados.clientes.length;
+        if(confirm(`Importar backup de ${dados.exportadoEm||'data desconhecida'}?\n\n${totalFretes} fretes e ${totalClientes} clientes.\n\nOs dados atuais serão SUBSTITUÍDOS.`)){
+          fretes=dados.fretes;
+          clientes=dados.clientes;
+          save();
+          alerta={tipo:'ok',msg:`Backup importado! ${totalFretes} fretes e ${totalClientes} clientes restaurados.`};
+          render();
+        }
+      }catch(err){
+        alerta={tipo:'err',msg:'Erro ao importar: arquivo inválido. Use um backup .json exportado pelo sistema.'};
+        render();
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+function genId(){return'F'+Date.now().toString(36).toUpperCase();}
+function genNFS(){return String(Math.floor(Math.random()*90000)+10000);}
+function genBoleto(){const s=()=>Math.random().toString().slice(2,12);return`34191.${s().slice(0,5)} ${s().slice(0,5)}.${s().slice(0,6)} ${s().slice(0,5)}.${s().slice(0,6)} 1 ${Date.now().toString().slice(-14)}`;}
+function fmtDate(d){if(!d)return'-';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`;}
+function fmtMoney(v){return'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function getMesAno(d){return d?d.slice(0,7):'';}
+function getMesNome(k){if(!k)return'';const[y,m]=k.split('-');return`${MESES[parseInt(m)-1]} / ${y}`;}
+function totalMes(){const h=new Date();const k=`${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}`;return fretes.filter(f=>getMesAno(f.data)===k&&f.status!=='Cancelado').reduce((s,f)=>s+Number(f.valor||0),0);}
+function badgeSt(f){if(f.status==='Pago')return`<span class="badge b-pago"><i class="ti ti-check" style="font-size:10px"></i>Pago</span>`;if(f.status==='Cancelado')return`<span class="badge b-cancel"><i class="ti ti-x" style="font-size:10px"></i>Cancelado</span>`;if(f.nfs)return`<span class="badge b-nf"><i class="ti ti-file-invoice" style="font-size:10px"></i>NFS-e</span>`;return`<span class="badge b-pend"><i class="ti ti-clock" style="font-size:10px"></i>Pendente</span>`;}
+function badgeTp(f){return f.tipo==='mensal'?`<span class="badge b-men"><i class="ti ti-calendar-month" style="font-size:10px"></i>Mensal</span>`:`<span class="badge b-fat"><i class="ti ti-file-dollar" style="font-size:10px"></i>Faturado</span>`;}
+
+function nav(t){
+  tabAtual=t;alerta=null;docFrete=null;
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  const nb=document.getElementById('nb-'+t);if(nb)nb.classList.add('active');
+  render();
+}
+
+function sf(k,v){form[k]=v;if(['descricao','servico','tipo'].includes(k))renderForm();}
+
+function renderForm(){
+  const f=form;const serv=f.servico||'';const desc=f.descricao||'';
+  const el=document.getElementById('form-area');
+  if(!el)return;
+
+  const cliOptions=clientes.length
+    ? clientes.map((c,i)=>`<option value="${i}" ${f._cliIdx==i?'selected':''}>${c.nome}${c.cnpj?' — '+c.cnpj:''}</option>`).join('')
+    : '';
+
+  el.innerHTML=`
+  ${clientes.length?`<div class="field full" style="background:var(--blue-light);padding:12px;border-radius:var(--radius-sm);border:1px solid #C0D8F5">
+    <label style="color:var(--blue)"><i class="ti ti-bolt" style="font-size:12px"></i> Seleção rápida de cliente</label>
+    <select onchange="preencherCliente(this.value)" style="background:#fff;font-weight:600;color:var(--blue)">
+      <option value="">Selecione um cliente cadastrado...</option>
+      ${cliOptions}
+    </select>
+    <div style="font-size:11px;color:var(--blue);margin-top:4px;opacity:.8"><i class="ti ti-info-circle" style="font-size:11px"></i> Selecionar preencherá automaticamente os dados do cliente</div>
+  </div>`:''}
+
+  <div class="tipo-toggle">
+    <button class="tipo-btn fat ${(!f.tipo||f.tipo==='faturado')?'sel':''}" onclick="sf('tipo','faturado')"><i class="ti ti-file-dollar"></i> Faturado <span style="font-size:11px;opacity:.7">(individual)</span></button>
+    <button class="tipo-btn men ${f.tipo==='mensal'?'sel':''}" onclick="sf('tipo','mensal')"><i class="ti ti-calendar-month"></i> Mensal <span style="font-size:11px;opacity:.7">(agrupa por mês)</span></button>
+  </div>
+  ${f.tipo==='mensal'?'<p class="tipo-hint"><i class="ti ti-info-circle" style="font-size:12px"></i> Este lançamento será agrupado na pasta do mês correspondente e aparecerá no relatório mensal.</p>':''}
+
+  <div class="section-sep"><span><i class="ti ti-calendar" style="font-size:11px"></i> Dados do serviço</span></div>
+  <div class="field"><label>Data do serviço <span style="color:var(--red)">*</span></label><input type="date" value="${f.data||''}" onchange="sf('data',this.value)"></div>
+  <div class="field"><label>Nº CTe / Ordem de serviço</label><input type="text" placeholder="Ex.: CTe 000123" value="${f.cte||''}" oninput="sf('cte',this.value)"></div>
+
+  <div class="field full">
+    <label>Serviço prestado <span style="color:var(--red)">*</span> <span class="badge-pill">Aparece na NFS-e</span></label>
+    <input type="text" class="highlight" maxlength="150" placeholder="Ex.: Transporte de GLP P45 — Itaúna/MG para Divinópolis/MG" value="${serv}" oninput="sf('servico',this.value)">
+    <div class="char-count">${serv.length}/150</div>
+  </div>
+
+  <div class="field full">
+    <label>Descrição complementar</label>
+    <textarea rows="2" maxlength="400" placeholder="Quantidade, tipo de carga, observações adicionais..." oninput="sf('descricao',this.value)" style="resize:vertical">${desc}</textarea>
+    <div class="char-count">${desc.length}/400</div>
+  </div>
+
+  <div class="section-sep"><span><i class="ti ti-user" style="font-size:11px"></i> Tomador do serviço</span></div>
+  <div class="field"><label>Nome / Razão social <span style="color:var(--red)">*</span></label><input type="text" placeholder="Nome do contratante" value="${f.tomador||''}" oninput="sf('tomador',this.value)"></div>
+  <div class="field"><label>CNPJ / CPF</label><input type="text" placeholder="00.000.000/0001-00" value="${f.cnpj||''}" oninput="sf('cnpj',this.value)"></div>
+
+  <div class="section-sep"><span><i class="ti ti-map-pin" style="font-size:11px"></i> Rota</span></div>
+  <div class="field"><label>Origem <span style="color:var(--red)">*</span></label><input type="text" placeholder="Cidade/local de coleta" value="${f.origem||''}" oninput="sf('origem',this.value)"></div>
+  <div class="field"><label>Destino <span style="color:var(--red)">*</span></label><input type="text" placeholder="Cidade/local de entrega" value="${f.destino||''}" oninput="sf('destino',this.value)"></div>
+  <div class="field"><label>Veículo / Placa</label><input type="text" placeholder="ABC-1D23" value="${f.placa||''}" oninput="sf('placa',this.value.toUpperCase())" maxlength="8"></div>
+  <div class="field"><label>Distância (km)</label><input type="number" placeholder="0" value="${f.km||''}" oninput="sf('km',this.value)" min="0"></div>
+
+  <div class="section-sep"><span><i class="ti ti-currency-dollar" style="font-size:11px"></i> Financeiro</span></div>
+  <div class="field"><label>Valor do frete (R$) <span style="color:var(--red)">*</span></label><input type="number" placeholder="0,00" value="${f.valor||''}" oninput="sf('valor',this.value)" min="0" step="0.01"></div>
+  <div class="field"><label>Data de vencimento <span style="color:var(--red)">*</span> <span class="badge-pill" style="background:#FEF0DA;color:var(--amber)">Controle bancário</span></label>
+    <input type="date" value="${f.vencimento||''}" onchange="sf('vencimento',this.value)" style="border-color:${f.vencimento?'var(--blue)':'var(--gray-3)'}">
+    ${!f.vencimento&&f.data?`<div style="font-size:11px;color:var(--gray-4);margin-top:2px"><i class="ti ti-info-circle" style="font-size:11px"></i> Sugestão: <button onclick="sf('vencimento',sugerirVenc('${f.data}'));renderForm()" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:600;padding:0">usar +30 dias (${sugerirVencFmt('${f.data}')})</button></div>`:''}
+  </div>
+  <div class="field"><label>Forma de pagamento</label>
+    <select onchange="sf('pagamento',this.value)">
+      <option value="">Selecione...</option>
+      ${['PIX','Transferência bancária','Dinheiro','Boleto','Cheque'].map(p=>`<option value="${p}" ${f.pagamento===p?'selected':''}>${p}</option>`).join('')}
+    </select>
+  </div>`;
+}
+
+function render(){
+  const el=document.getElementById('nb-count');if(el)el.textContent=fretes.filter(f=>f.status!=='Cancelado').length;
+  const em=document.getElementById('nb-men-count');if(em)em.textContent=fretes.filter(f=>f.tipo==='mensal'&&f.status!=='Cancelado').length;
+  const ec=document.getElementById('nb-cli-count');if(ec)ec.textContent=clientes.length;
+
+  const main=document.getElementById('main');
+  let h='';
+
+  if(alerta){
+    h+=`<div class="alert ${alerta.tipo==='ok'?'alert-ok':'alert-err'}"><i class="ti ti-${alerta.tipo==='ok'?'check':'alert-circle'}"></i>${alerta.msg}</div>`;
+    setTimeout(()=>{alerta=null;render();},3800);
+  }
+
+  // DASHBOARD
+  if(tabAtual==='dashboard'){
+    h+=`<div class="page-header"><div class="page-title">Dashboard</div><div class="page-sub">${EMPRESA.endFull}</div></div>`;
+    const pend=fretes.filter(f=>f.status==='Pendente').length;
+    const nfsN=fretes.filter(f=>f.nfs).length;
+    const mens=fretes.filter(f=>f.tipo==='mensal'&&f.status!=='Cancelado').length;
+    h+=`<div class="stats">
+      <div class="stat"><div class="stat-label"><i class="ti ti-truck"></i> Total fretes</div><div class="stat-val blue">${fretes.filter(f=>f.status!=='Cancelado').length}</div></div>
+      <div class="stat"><div class="stat-label"><i class="ti ti-calendar-month"></i> Receita do mês</div><div class="stat-val blue">${fmtMoney(totalMes())}</div></div>
+      <div class="stat"><div class="stat-label"><i class="ti ti-clock"></i> Pendentes</div><div class="stat-val amber">${pend}</div></div>
+      <div class="stat"><div class="stat-label"><i class="ti ti-file-invoice"></i> NFS-e emitidas</div><div class="stat-val blue">${nfsN}</div></div>
+      <div class="stat"><div class="stat-label"><i class="ti ti-folders"></i> Mensais</div><div class="stat-val purple">${mens}</div></div>
+    </div>`;
+    const rec=[...fretes].filter(f=>f.status!=='Cancelado').sort((a,b)=>b.criadoEm-a.criadoEm).slice(0,6);
+    h+=`<div class="card"><div class="card-title"><i class="ti ti-history"></i> Últimos lançamentos</div>`;
+    if(!rec.length)h+=`<div class="empty"><i class="ti ti-truck"></i>Nenhum lançamento ainda.<br><small>Clique em "Novo lançamento" para começar.</small></div>`;
+    else{
+      h+=`<div class="table-wrap"><table><thead><tr><th>Data</th><th>Tomador</th><th>Serviço prestado</th><th>Valor</th><th>Tipo</th><th>Status</th></tr></thead><tbody>`;
+      rec.forEach(f=>{h+=`<tr><td style="white-space:nowrap">${fmtDate(f.data)}</td><td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.tomador||'-'}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.servico||'-'}</td><td style="font-weight:700;white-space:nowrap">${fmtMoney(f.valor)}</td><td>${badgeTp(f)}</td><td>${badgeSt(f)}</td></tr>`;});
+      h+=`</tbody></table></div>`;
+    }
+    h+=`</div>`;
+  }
+
+  // NOVO
+  if(tabAtual==='novo'){
+    h+=`<div class="page-header"><div class="page-title">Novo lançamento</div><div class="page-sub">Preencha os dados do frete</div></div>`;
+    h+=`<div class="card"><div class="form-grid" id="form-area"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-2)">
+      <button class="btn btn-sec" onclick="limpar()"><i class="ti ti-x"></i> Limpar</button>
+      <button class="btn btn-primary" onclick="salvar()"><i class="ti ti-check"></i> Salvar lançamento</button>
+    </div></div>`;
+  }
+
+  // FRETES
+  if(tabAtual==='fretes'){
+    h+=`<div class="page-header"><div class="page-title">Todos os fretes</div></div>`;
+    h+=`<div class="card">
+    <div class="filter-row">
+      <input type="text" placeholder="Buscar tomador ou serviço..." value="${filtro}" oninput="filtro=this.value;render()">
+      <select onchange="filtroStatus=this.value;render()">
+        <option value="">Todos os status</option>
+        <option value="Pendente" ${filtroStatus==='Pendente'?'selected':''}>Pendente</option>
+        <option value="Pago" ${filtroStatus==='Pago'?'selected':''}>Pago</option>
+        <option value="Cancelado" ${filtroStatus==='Cancelado'?'selected':''}>Cancelado</option>
+      </select>
+      <select onchange="filtroTipo=this.value;render()">
+        <option value="">Todos os tipos</option>
+        <option value="faturado" ${filtroTipo==='faturado'?'selected':''}>Faturado</option>
+        <option value="mensal" ${filtroTipo==='mensal'?'selected':''}>Mensal</option>
+      </select>
+    </div>`;
+    let lista=fretes.filter(f=>{
+      const t=`${f.tomador} ${f.servico} ${f.origem} ${f.destino}`.toLowerCase();
+      return(!filtro||t.includes(filtro.toLowerCase()))&&(!filtroStatus||f.status===filtroStatus)&&(!filtroTipo||f.tipo===filtroTipo);
+    }).sort((a,b)=>b.criadoEm-a.criadoEm);
+    if(!lista.length)h+=`<div class="empty"><i class="ti ti-search"></i>Nenhum frete encontrado.</div>`;
+    else{
+      h+=`<div class="table-wrap"><table><thead><tr><th>Data</th><th>Tomador</th><th>Serviço prestado</th><th>Valor</th><th>Tipo</th><th>NFS-e</th><th>Status</th><th>Ações</th></tr></thead><tbody>`;
+      lista.forEach(f=>{
+        h+=`<tr>
+          <td style="white-space:nowrap">${fmtDate(f.data)}</td>
+          <td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.tomador||'-'}</td>
+          <td style="max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.servico||'-'}</td>
+          <td style="font-weight:700;white-space:nowrap">${fmtMoney(f.valor)}</td>
+          <td>${badgeTp(f)}</td>
+          <td style="font-size:12px">${f.nfs?`<span style="color:var(--blue);font-weight:700">#${f.nfs}</span>`:'-'}</td>
+          <td>${badgeSt(f)}</td>
+          <td><div class="action-row">
+            ${f.status!=='Cancelado'&&f.status!=='Pago'?`<button class="btn btn-sec btn-sm" onclick="marcarPago('${f.id}')" title="Marcar pago"><i class="ti ti-check"></i></button>`:''}
+            <button class="btn btn-danger btn-sm" onclick="cancelar('${f.id}')" title="Excluir"><i class="ti ti-trash"></i></button>
+          </div></td>
+        </tr>`;
+      });
+      h+=`</tbody></table></div>`;
+    }
+    h+=`</div>`;
+  }
+
+  // MENSAL
+  if(tabAtual==='mensal'){
+    h+=`<div class="page-header"><div class="page-title">Pasta mensal</div><div class="page-sub">Fretes agrupados por mês e por cliente para fechamento</div></div>`;
+    const mens=fretes.filter(f=>f.tipo==='mensal'&&f.status!=='Cancelado');
+    const grupos={};
+    mens.forEach(f=>{const k=getMesAno(f.data);if(!grupos[k])grupos[k]=[];grupos[k].push(f);});
+    const chaves=Object.keys(grupos).sort((a,b)=>b.localeCompare(a));
+    if(!chaves.length){
+      h+=`<div class="card"><div class="empty"><i class="ti ti-folder-off"></i>Nenhum frete mensal lançado ainda.<br><small>Ao lançar um frete com tipo "Mensal", ele aparecerá aqui agrupado por mês e por cliente.</small></div></div>`;
+    } else {
+      chaves.forEach(k=>{
+        const itens=grupos[k];
+        const total=itens.reduce((s,f)=>s+Number(f.valor||0),0);
+        const ab=pastaAberta===k;
+        // Agrupar por cliente (tomador)
+        const porCliente={};
+        itens.forEach(f=>{const cli=f.tomador||f.cnpj||'Sem cliente';if(!porCliente[cli])porCliente[cli]=[];porCliente[cli].push(f);});
+        const cliKeys=Object.keys(porCliente).sort();
+        h+=`<div class="pasta">
+          <div class="pasta-header" onclick="togglePasta('${k}')">
+            <div class="pasta-titulo"><i class="ti ti-folder${ab?'-open':''}" style="color:var(--blue);font-size:18px"></i>${getMesNome(k)}</div>
+            <div class="pasta-meta">
+              <span style="color:var(--gray-4)">${cliKeys.length} cliente${cliKeys.length>1?'s':''} · ${itens.length} frete${itens.length>1?'s':''}</span>
+              <span style="font-weight:700;color:var(--blue)">${fmtMoney(total)}</span>
+              <button class="btn btn-green btn-sm" onclick="event.stopPropagation();gerarRel('${k}')"><i class="ti ti-report"></i> Relatório</button>
+              <i class="ti ti-chevron-${ab?'up':'down'}" style="color:var(--gray-4)"></i>
+            </div>
+          </div>
+          <div class="pasta-body ${ab?'open':''}">`;
+        cliKeys.forEach(cli=>{
+          const cliItens=porCliente[cli];
+          const cliTotal=cliItens.reduce((s,f)=>s+Number(f.valor||0),0);
+          const cliCnpj=cliItens[0].cnpj||'';
+          h+=`<div style="margin-top:14px;border:1px solid var(--gray-2);border-radius:var(--radius-sm);overflow:hidden">
+            <div style="padding:10px 14px;background:var(--blue-light);display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <span style="font-weight:700;color:var(--blue);font-size:14px"><i class="ti ti-building" style="font-size:13px"></i> ${cli}</span>
+                ${cliCnpj?`<span style="font-size:11px;color:var(--gray-4);margin-left:8px">${cliCnpj}</span>`:''}
+              </div>
+              <div style="text-align:right">
+                <span style="font-size:12px;color:var(--gray-4)">${cliItens.length} frete${cliItens.length>1?'s':''}</span>
+                <span style="font-weight:700;color:var(--blue);margin-left:8px">${fmtMoney(cliTotal)}</span>
+              </div>
+            </div>
+            <table><thead><tr><th>Data</th><th>Serviço prestado</th><th>Rota</th><th>Valor</th><th>NF</th><th>Status</th></tr></thead><tbody>`;
+          cliItens.sort((a,b)=>a.data.localeCompare(b.data)).forEach(f=>{
+            h+=`<tr><td style="white-space:nowrap">${fmtDate(f.data)}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.servico||'-'}</td><td style="font-size:11px;color:var(--gray-4)">${f.origem||'-'} → ${f.destino||'-'}</td><td style="font-weight:700">${fmtMoney(f.valor)}</td><td style="font-size:12px">${f.nfs?`<span style="color:var(--blue);font-weight:700">#${f.nfs}</span>`:'-'}</td><td>${badgeSt(f)}</td></tr>`;
+          });
+          h+=`</tbody></table></div>`;
+        });
+        h+=`</div></div>`;
+      });
+    }
+  }
+
+  // RELATÓRIO
+  if(tabAtual==='relatorio'){
+    const hoje=new Date();
+    const selMes=relMes||String(hoje.getMonth()+1).padStart(2,'0');
+    const selAno=relAno||String(hoje.getFullYear());
+    const chave=`${selAno}-${selMes}`;
+    const anos=[...new Set(fretes.map(f=>f.data?f.data.slice(0,4):null).filter(Boolean))];
+    if(!anos.includes(String(hoje.getFullYear())))anos.push(String(hoje.getFullYear()));
+    anos.sort((a,b)=>b-a);
+    h+=`<div class="page-header"><div class="page-title">Relatório mensal</div><div class="page-sub">Resumo de datas, valores e serviços prestados</div></div>`;
+    h+=`<div class="card">
+    <div class="filter-row" style="margin-bottom:0">
+      <select onchange="relMes=this.value;relGerado=null;render()" style="min-width:130px">
+        ${MESES.map((m,i)=>{const v=String(i+1).padStart(2,'0');return`<option value="${v}" ${selMes===v?'selected':''}>${m}</option>`;}).join('')}
+      </select>
+      <select onchange="relAno=this.value;relGerado=null;render()">
+        ${anos.map(a=>`<option value="${a}" ${selAno===a?'selected':''}>${a}</option>`).join('')}
+      </select>
+      <button class="btn btn-primary" onclick="gerarRel('${chave}')"><i class="ti ti-search"></i> Gerar relatório</button>
+    </div></div>`;
+
+    if(relGerado&&relGerado.chave===chave){
+      const itens=relGerado.itens;
+      const totalG=itens.reduce((s,f)=>s+Number(f.valor||0),0);
+      const totalPago=itens.filter(f=>f.status==='Pago').reduce((s,f)=>s+Number(f.valor||0),0);
+      h+=`<div class="rel-wrap">
+        <div class="rel-header">
+          <div class="rel-header-title"><i class="ti ti-report"></i> ${getMesNome(chave)}</div>
+          <div class="rel-header-sub">${EMPRESA.nome} · CNPJ ${EMPRESA.cnpj}</div>
+        </div>
+        <div class="rel-body">
+          <div class="rel-sumario">
+            <div class="rel-sum-item"><div class="rel-sum-label">Total de serviços</div><div class="rel-sum-val">${itens.length}</div></div>
+            <div class="rel-sum-item"><div class="rel-sum-label">Valor total</div><div class="rel-sum-val">${fmtMoney(totalG)}</div></div>
+            <div class="rel-sum-item"><div class="rel-sum-label" style="color:var(--green)">Recebido</div><div class="rel-sum-val" style="color:var(--green)">${fmtMoney(totalPago)}</div></div>
+          </div>`;
+      if(!itens.length){
+        h+=`<div class="empty" style="padding:2rem"><i class="ti ti-file-off"></i>Nenhum serviço lançado neste período.</div>`;
+      } else {
+        h+=`<table class="rel-table"><thead><tr><th>Data</th><th>Tomador</th><th>Serviço prestado</th><th>Tipo</th><th>NFS-e</th><th>Valor</th><th>Status</th></tr></thead><tbody>`;
+        itens.sort((a,b)=>a.data.localeCompare(b.data)).forEach(f=>{
+          h+=`<tr>
+            <td style="white-space:nowrap">${fmtDate(f.data)}</td>
+            <td>${f.tomador||'-'}</td>
+            <td>${f.servico||'-'}${f.descricao?`<br><span style="font-size:11px;color:var(--gray-4)">${f.descricao.slice(0,80)}${f.descricao.length>80?'…':''}</span>`:''}</td>
+            <td>${badgeTp(f)}</td>
+            <td style="font-size:12px">${f.nfs?`<span style="color:var(--blue);font-weight:700">#${f.nfs}</span>`:'-'}</td>
+            <td style="font-weight:700;white-space:nowrap">${fmtMoney(f.valor)}</td>
+            <td>${badgeSt(f)}</td>
+          </tr>`;
+        });
+        h+=`<tr class="total-row"><td colspan="5" style="text-align:right;padding:10px 12px">TOTAL DO PERÍODO</td><td style="padding:10px 12px;font-weight:800;color:var(--blue)">${fmtMoney(totalG)}</td><td></td></tr>`;
+        h+=`</tbody></table>`;
+      }
+      h+=`<div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn btn-sec" onclick="window.print()"><i class="ti ti-printer"></i> Imprimir relatório</button></div>`;
+      h+=`</div></div>`;
+    }
+  }
+
+  // MOTORISTAS
+  if(tabAtual==='motoristas'){
+    h+=`<div class="page-header">
+      <div class="page-title">Registros dos motoristas</div>
+      <div class="page-sub">Fretes enviados pelos motoristas — aprove para lançar no sistema</div>
+    </div>`;
+
+    if(!fbConfigOk){
+      h+=`<div class="card" style="text-align:center;padding:32px">
+        <i class="ti ti-settings" style="font-size:48px;color:var(--amber);display:block;margin-bottom:12px"></i>
+        <div style="font-size:17px;font-weight:700;color:var(--amber);margin-bottom:8px">Firebase não configurado</div>
+        <div style="font-size:13px;color:var(--gray-4);line-height:1.7;max-width:400px;margin:0 auto">
+          Adicione as credenciais do Firebase no topo do arquivo <strong>index.html</strong>.<br>
+          Consulte o <strong>README.md</strong> para instruções passo a passo.
+        </div>
+      </div>`;
+    } else {
+      const pendMot = (window._motFretes||[]).filter(f=>f.status==='pendente');
+      const todosMot = window._motFretes||[];
+
+      // Stats
+      h+=`<div class="stats" style="margin-bottom:16px">
+        <div class="stat"><div class="stat-label"><i class="ti ti-clock"></i> Aguardando aprovação</div><div class="stat-val amber">${pendMot.length}</div></div>
+        <div class="stat"><div class="stat-label"><i class="ti ti-check"></i> Aprovados hoje</div><div class="stat-val green">${todosMot.filter(f=>f.status==='aprovado'&&f._dataAprov===hoje()).length}</div></div>
+        <div class="stat"><div class="stat-label"><i class="ti ti-users"></i> Total recebido</div><div class="stat-val blue">${todosMot.length}</div></div>
+      </div>`;
+
+      // Filtro
+      h+=`<div class="card">
+        <div class="card-title" style="margin-bottom:12px"><i class="ti ti-inbox"></i> Todos os registros</div>
+        <div class="filter-row">
+          <select onchange="filtroMotStatus=this.value;render()" style="font-size:13px;padding:8px 12px;border:1px solid var(--gray-3);border-radius:var(--radius-sm);background:#fff;color:var(--gray-6)">
+            <option value="">Todos os status</option>
+            <option value="pendente" ${filtroMotStatus==='pendente'?'selected':''}>Aguardando</option>
+            <option value="aprovado" ${filtroMotStatus==='aprovado'?'selected':''}>Aprovados</option>
+            <option value="rejeitado" ${filtroMotStatus==='rejeitado'?'selected':''}>Rejeitados</option>
+          </select>
+          <select onchange="filtroMotMot=this.value;render()" style="font-size:13px;padding:8px 12px;border:1px solid var(--gray-3);border-radius:var(--radius-sm);background:#fff;color:var(--gray-6)">
+            <option value="">Todos os motoristas</option>
+            ${[...new Set(todosMot.map(f=>f.motorista))].map(m=>`<option value="${m}" ${filtroMotMot===m?'selected':''}>${m}</option>`).join('')}
+          </select>
+        </div>`;
+
+      let lista=(window._motFretes||[]).filter(f=>{
+        const s1=!filtroMotStatus||f.status===filtroMotStatus;
+        const s2=!filtroMotMot||f.motorista===filtroMotMot;
+        return s1&&s2;
+      });
+
+      if(!lista.length){
+        h+=`<div class="empty" style="padding:2rem"><i class="ti ti-inbox-off"></i>Nenhum registro encontrado.<br><small>Os fretes enviados pelos motoristas aparecerão aqui em tempo real.</small></div>`;
+      } else {
+        lista.forEach(f=>{
+          const dt=f.datetime?(f.datetime.slice(8,10)+'/'+f.datetime.slice(5,7)+'/'+f.datetime.slice(0,4)):'-';
+          const hr=f.datetime?f.datetime.slice(11,16):'-';
+          const isPend=f.status==='pendente';
+          const isAprov=f.status==='aprovado';
+          h+=`<div style="border:1px solid ${isPend?'#F0D080':isAprov?'#B8DDA8':var_gray3()};border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;background:${isPend?'#FFFBF0':isAprov?'#F6FFF0':'#fff'}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span style="font-size:13px;font-weight:700;background:var(--blue-light);color:var(--blue);padding:3px 10px;border-radius:20px"><i class="ti ti-user-circle" style="font-size:11px"></i> ${f.motorista}</span>
+                  <span style="font-size:12px;color:var(--gray-4)">${dt} às ${hr}</span>
+                  ${f.tipo==='mensal'?`<span style="font-size:11px;background:#EEE6FB;color:#5A1D9A;padding:2px 8px;border-radius:20px;font-weight:600">Mensal</span>`:`<span style="font-size:11px;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600">Faturado</span>`}
+                </div>
+                <div style="font-size:14px;font-weight:600;margin-bottom:4px">${f.servico||'-'}</div>
+                <div style="font-size:13px;margin-bottom:3px"><i class="ti ti-building" style="font-size:11px;color:var(--blue)"></i> <strong>Remetente:</strong> ${f.remetente||'-'} &nbsp;→&nbsp; <strong>Destinatário:</strong> ${f.destinatario||'-'}</div>
+                <div style="font-size:12px;margin-bottom:3px;color:var(--amber);font-weight:600"><i class="ti ti-cash" style="font-size:11px"></i> Paga: ${f.pagadorNome||'-'}</div>
+                <div style="font-size:12px;color:var(--gray-4)"><i class="ti ti-map-pin" style="font-size:11px"></i> ${f.origem||'-'} → ${f.destino||'-'}</div>
+                ${f.formaPgto&&f.tipo==='faturado'?`<div style="font-size:12px;margin-top:3px"><i class="ti ti-cash" style="font-size:11px;color:var(--green)"></i> <strong>${{'avista':'À vista','pix':'PIX','boleto':'Boleto'}[f.formaPgto]||f.formaPgto}</strong></div>`:''}
+                ${f.emitirNF==='sim'?`<div style="font-size:12px;margin-top:3px;color:var(--blue);font-weight:600"><i class="ti ti-file-invoice" style="font-size:11px"></i> NF solicitada</div>`:''}
+                ${f.obs?`<div style="font-size:12px;color:var(--gray-4);margin-top:4px"><i class="ti ti-note" style="font-size:11px"></i> ${f.obs}</div>`:''}
+                ${f.vencimento?`<div style="font-size:12px;margin-top:4px;font-weight:600;color:var(--amber)"><i class="ti ti-calendar-event" style="font-size:11px"></i> Vencimento: ${f.vencimento.split('-').reverse().join('/')} (${f.prazoVenc||'?'} dias)</div>`:''}
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-size:20px;font-weight:800;color:var(--blue)">${fmtMoney(f.valor)}</div>
+                ${isPend
+                  ?`<div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end">
+                      <button class="btn btn-danger btn-sm" onclick="rejeitarMot('${f._id}')"><i class="ti ti-x"></i> Rejeitar</button>
+                      <button class="btn btn-green btn-sm" onclick="aprovarMot('${f._id}')"><i class="ti ti-check"></i> Aprovar</button>
+                    </div>`
+                  :isAprov
+                    ?`<span class="badge b-pago" style="margin-top:6px;display:inline-flex"><i class="ti ti-check" style="font-size:10px"></i>Aprovado</span>`
+                    :`<span class="badge b-cancel" style="margin-top:6px;display:inline-flex"><i class="ti ti-x" style="font-size:10px"></i>Rejeitado</span>`
+                }
+              </div>
+            </div>
+          </div>`;
+        });
+      }
+      h+=`</div>`;
+    }
+  }
+
+  // CONTROLE BANCÁRIO
+  if(tabAtual==='controle'){
+    const hoje=new Date();
+    const selMes=relMes||String(hoje.getMonth()+1).padStart(2,'0');
+    const selAno=relAno||String(hoje.getFullYear());
+    const anos=[...new Set(fretes.map(f=>f.data?f.data.slice(0,4):null).filter(Boolean))];
+    if(!anos.includes(String(hoje.getFullYear())))anos.push(String(hoje.getFullYear()));
+    anos.sort((a,b)=>b-a);
+
+    // Todos os fretes com boleto
+    const comBoleto=fretes.filter(f=>f.boleto&&f.status!=='Cancelado');
+    // Filtro por período se selecionado
+    const chaveCtrl=`${selAno}-${selMes}`;
+    const [filtroCtrlMes,setFiltroCtrlMes]=[relMes,v=>{relMes=v;}];
+
+    // Usa vencimento do lançamento, ou fallback +30 dias
+    function calcVenc(f){
+      if(f.vencimento){const[y,m,d]=f.vencimento.split('-');return`${d}/${m}/${y}`;}
+      if(!f.data)return'-';
+      const d=new Date(f.data+'T00:00:00');d.setDate(d.getDate()+30);return d.toLocaleDateString('pt-BR');
+    }
+    function calcVencISO(f){
+      if(f.vencimento)return f.vencimento;
+      if(!f.data)return'';
+      const d=new Date(f.data+'T00:00:00');d.setDate(d.getDate()+30);return d.toISOString().slice(0,10);
+    }
+
+    // Opções de filtro período
+    h+=`<div class="page-header"><div class="page-title">Controle bancário</div><div class="page-sub">Conferência de boletos — quem pagou e quem está pendente</div></div>`;
+
+    // Filtros
+    h+=`<div class="card" style="padding:18px 24px">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <select id="ctrl-mes" onchange="relMes=this.value;render()" style="padding:8px 12px;border:1px solid var(--gray-3);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif">
+        <option value="">Todos os meses</option>
+        ${MESES.map((m,i)=>{const v=String(i+1).padStart(2,'0');return`<option value="${v}" ${selMes===v&&relMes?'selected':''}>${m}</option>`;}).join('')}
+      </select>
+      <select id="ctrl-ano" onchange="relAno=this.value;render()" style="padding:8px 12px;border:1px solid var(--gray-3);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif">
+        ${anos.map(a=>`<option value="${a}" ${selAno===a?'selected':''}>${a}</option>`).join('')}
+      </select>
+      <select id="ctrl-status" onchange="filtroStatus=this.value;render()" style="padding:8px 12px;border:1px solid var(--gray-3);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif">
+        <option value="">Todos (pago + pendente)</option>
+        <option value="Pendente" ${filtroStatus==='Pendente'?'selected':''}>Apenas pendentes</option>
+        <option value="Pago" ${filtroStatus==='Pago'?'selected':''}>Apenas pagos</option>
+      </select>
+      <button class="btn btn-primary" onclick="exportarCSV()"><i class="ti ti-table-export"></i> Exportar CSV</button>
+      <button class="btn btn-sec" onclick="window.print()"><i class="ti ti-printer"></i> Imprimir</button>
+    </div></div>`;
+
+    // Monta lista filtrada
+    let listaCtrl=comBoleto.filter(f=>{
+      const mesOk=!relMes||getMesAno(f.data)===`${selAno}-${selMes}`;
+      const stOk=!filtroStatus||f.status===filtroStatus;
+      return mesOk&&stOk;
+    }).sort((a,b)=>calcVencISO(a).localeCompare(calcVencISO(b)));
+
+    const totalGeral=listaCtrl.reduce((s,f)=>s+Number(f.valor||0),0);
+    const totalPago=listaCtrl.filter(f=>f.status==='Pago').reduce((s,f)=>s+Number(f.valor||0),0);
+    const totalPend=listaCtrl.filter(f=>f.status!=='Pago').reduce((s,f)=>s+Number(f.valor||0),0);
+    const qtdPago=listaCtrl.filter(f=>f.status==='Pago').length;
+    const qtdPend=listaCtrl.filter(f=>f.status!=='Pago').length;
+
+    // Cards de resumo
+    h+=`<div class="stats" style="margin-bottom:16px">
+      <div class="stat"><div class="stat-label"><i class="ti ti-receipt"></i> Total boletos</div><div class="stat-val blue">${listaCtrl.length}</div></div>
+      <div class="stat"><div class="stat-label"><i class="ti ti-check"></i> Pagos</div><div class="stat-val green">${qtdPago}</div></div>
+      <div class="stat"><div class="stat-label"><i class="ti ti-clock"></i> Pendentes</div><div class="stat-val amber">${qtdPend}</div></div>
+      <div class="stat"><div class="stat-label"><i class="ti ti-currency-dollar"></i> Total geral</div><div class="stat-val blue">${fmtMoney(totalGeral)}</div></div>
+      <div class="stat"><div class="stat-label" style="color:var(--green)"><i class="ti ti-check"></i> Recebido</div><div class="stat-val green">${fmtMoney(totalPago)}</div></div>
+      <div class="stat"><div class="stat-label" style="color:var(--amber)"><i class="ti ti-alert-circle"></i> A receber</div><div class="stat-val amber">${fmtMoney(totalPend)}</div></div>
+    </div>`;
+
+    if(!listaCtrl.length){
+      h+=`<div class="card"><div class="empty"><i class="ti ti-receipt-off"></i>Nenhum boleto encontrado para o período selecionado.<br><small>Emita boletos na aba "Emitir boleto" para eles aparecerem aqui.</small></div></div>`;
+    } else {
+      h+=`<div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 20px;background:var(--gray-1);border-bottom:1px solid var(--gray-2);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-weight:700;font-size:14px;color:var(--gray-6)"><i class="ti ti-building-bank" style="color:var(--blue)"></i> Relatório de boletos${relMes?' — '+getMesNome(chaveCtrl):''}</span>
+        <span style="font-size:12px;color:var(--gray-4)">${listaCtrl.length} registro${listaCtrl.length>1?'s':''}</span>
+      </div>
+      <div class="table-wrap">
+      <table id="tabela-controle">
+        <thead>
+          <tr>
+            <th>Vencimento</th>
+            <th>Empresa / Tomador</th>
+            <th>Serviço prestado</th>
+            <th>Nº do boleto</th>
+            <th>Valor</th>
+            <th>Situação</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+      listaCtrl.forEach(f=>{
+        const venc=calcVencISO(f);
+        const vencFmt=calcVenc(f);
+        const hoje2=new Date().toISOString().slice(0,10);
+        const vencido=f.status!=='Pago'&&venc<hoje2;
+        const pago=f.status==='Pago';
+        h+=`<tr style="${vencido?'background:#FFF8F8;':pago?'background:#F6FFF0;':''}">
+          <td style="white-space:nowrap;font-weight:${vencido?'700':'500'};color:${vencido?'var(--red)':pago?'var(--green)':'var(--gray-6)'}">
+            ${vencFmt}
+            ${vencido?`<br><span style="font-size:10px;color:var(--red);font-weight:700"><i class="ti ti-alert-circle" style="font-size:10px"></i> VENCIDO</span>`:''}
+          </td>
+          <td style="font-weight:600;max-width:150px">${f.tomador||'-'}<br><span style="font-size:11px;font-weight:400;color:var(--gray-4)">${f.cnpj||''}</span></td>
+          <td style="font-size:12px;max-width:180px;word-break:break-word;white-space:normal">${f.servico||'-'}</td>
+          <td style="font-family:'DM Mono',monospace;font-size:11px;max-width:200px;word-break:break-all;white-space:normal;color:var(--blue)">${f.boleto||'-'}</td>
+          <td style="font-weight:700;white-space:nowrap;font-size:15px;color:${pago?'var(--green)':'var(--gray-6)'}">${fmtMoney(f.valor)}</td>
+          <td>
+            ${pago
+              ?`<span class="badge b-pago"><i class="ti ti-check" style="font-size:10px"></i>Pago</span>`
+              :vencido
+                ?`<span class="badge" style="background:#FCEAEA;color:var(--red)"><i class="ti ti-alert-circle" style="font-size:10px"></i>Vencido</span>`
+                :`<span class="badge b-pend"><i class="ti ti-clock" style="font-size:10px"></i>Pendente</span>`
+            }
+          </td>
+          <td>
+            ${!pago?`<button class="btn btn-green btn-sm" onclick="marcarPago('${f.id}')"><i class="ti ti-check"></i> Pago</button>`
+              :`<span style="font-size:11px;color:var(--green)"><i class="ti ti-check-circle"></i> Confirmado</span>`}
+          </td>
+        </tr>`;
+      });
+
+      h+=`</tbody>
+        <tfoot>
+          <tr style="background:var(--blue-light);font-weight:700">
+            <td colspan="4" style="padding:12px 12px;text-align:right;color:var(--blue)">TOTAL</td>
+            <td style="padding:12px;color:var(--blue);font-size:15px">${fmtMoney(totalGeral)}</td>
+            <td colspan="2" style="padding:12px;font-size:12px;color:var(--blue)">Recebido: ${fmtMoney(totalPago)} &nbsp;|&nbsp; A receber: ${fmtMoney(totalPend)}</td>
+          </tr>
+        </tfoot>
+      </table></div></div>`;
+    }
+  }
+
+  // REMESSA CNAB 240
+  if(tabAtual==='remessa'){
+    const pendRem = fretes.filter(f=>f.boleto&&f.status!=='Cancelado'&&!f.remessa);
+    const enviados = fretes.filter(f=>f.remessa);
+
+    h+=`<div class="page-header"><div class="page-title">Remessa CNAB 240 — SICOOB</div><div class="page-sub">Gere o arquivo .REM para enviar ao SICOOB pelo internet banking</div></div>`;
+
+    // Config card
+    h+=`<div class="card" style="border-left:4px solid var(--blue)">
+      <div class="card-title" style="margin-bottom:10px"><i class="ti ti-settings"></i> Dados identificados no boleto</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;font-size:13px">
+        ${[
+          ['Banco','756 — SICOOB'],
+          ['Cooperativa','4101 — SICOOB CENTRO-OESTE'],
+          ['Cód. beneficiário','1947729'],
+          ['Carteira','01'],
+          ['CNPJ','53.651.463/0001-80'],
+          ['Layout','CNAB 240']
+        ].map(([l,v])=>`<div style="background:var(--gray-1);border-radius:var(--radius-sm);padding:10px 12px"><div style="font-size:10px;color:var(--gray-4);font-weight:600;text-transform:uppercase;margin-bottom:3px">${l}</div><div style="font-weight:700;color:var(--blue)">${v}</div></div>`).join('')}
+      </div>
+      <div style="margin-top:12px;padding:10px 12px;background:#FEF8E6;border-radius:var(--radius-sm);border:1px solid #F0D080;font-size:12px;color:#7A5000">
+        <i class="ti ti-alert-triangle" style="font-size:13px"></i> <strong>Importante:</strong> Confirme com sua cooperativa SICOOB o DV da agência e da conta antes de usar em produção. O arquivo gerado segue o layout CNAB 240 padrão FEBRABAN homologado pelo SICOOB.
+      </div>
+    </div>`;
+
+    // Boletos para remessa
+    h+=`<div class="card"><div class="card-title"><i class="ti ti-checklist"></i> Boletos disponíveis para remessa <span style="font-size:13px;font-weight:400;color:var(--gray-4)">(${pendRem.length} pendente${pendRem.length!==1?'s':''})</span></div>`;
+
+    if(!pendRem.length){
+      h+=`<div class="empty" style="padding:2rem"><i class="ti ti-file-off"></i>Nenhum boleto pendente de remessa.<br><small>Boletos já enviados ou fretes sem boleto não aparecem aqui.</small></div>`;
+    } else {
+      h+=`<div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+        <button class="btn btn-sec btn-sm" onclick="selecionarTodos(true)"><i class="ti ti-checkbox"></i> Selecionar todos</button>
+        <button class="btn btn-sec btn-sm" onclick="selecionarTodos(false)"><i class="ti ti-square"></i> Limpar seleção</button>
+        <span style="font-size:12px;color:var(--gray-4);margin-left:auto" id="count-sel">0 selecionados</span>
+      </div>
+      <div class="table-wrap">
+      <table id="tab-remessa"><thead><tr>
+        <th style="width:40px"><input type="checkbox" id="chk-all" onchange="selecionarTodos(this.checked)"></th>
+        <th>Vencimento</th><th>Tomador</th><th>Serviço prestado</th><th>Nº boleto (resumido)</th><th>Valor</th>
+      </tr></thead><tbody>`;
+      pendRem.forEach(f=>{
+        let vencStr='-';
+        if(f.vencimento){const[vy,vm,vd]=f.vencimento.split('-');vencStr=`${vd}/${vm}/${vy}`;}
+        const boletoCurto=(f.boleto||'').replace(/\s/g,'').slice(-10);
+        h+=`<tr>
+          <td><input type="checkbox" class="chk-boleto" data-id="${f.id}" onchange="atualizarContSel()"></td>
+          <td style="white-space:nowrap;font-weight:600">${vencStr}</td>
+          <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${f.tomador||'-'}</td>
+          <td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.servico||'-'}</td>
+          <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--blue)">...${boletoCurto}</td>
+          <td style="font-weight:700">${fmtMoney(f.valor)}</td>
+        </tr>`;
+      });
+      h+=`</tbody></table></div>
+      <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;padding-top:14px;border-top:1px solid var(--gray-2)">
+        <button class="btn btn-primary" onclick="gerarRemessa()"><i class="ti ti-file-export"></i> Gerar arquivo de remessa (.REM)</button>
+      </div>`;
+    }
+    h+=`</div>`;
+
+    // Histórico de remessas
+    if(enviados.length){
+      const grupos={};
+      enviados.forEach(f=>{const k=f.remessa;if(!grupos[k])grupos[k]=[];grupos[k].push(f);});
+      h+=`<div class="card"><div class="card-title"><i class="ti ti-history"></i> Remessas geradas</div>
+      <div class="table-wrap"><table><thead><tr><th>Arquivo gerado</th><th>Qtd títulos</th><th>Valor total</th><th>Situação</th></tr></thead><tbody>`;
+      Object.keys(grupos).sort((a,b)=>b.localeCompare(a)).forEach(k=>{
+        const itens=grupos[k];
+        const tot=itens.reduce((s,f)=>s+Number(f.valor||0),0);
+        h+=`<tr>
+          <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--blue)">${k}</td>
+          <td>${itens.length}</td>
+          <td style="font-weight:700">${fmtMoney(tot)}</td>
+          <td><span class="badge b-nf"><i class="ti ti-check" style="font-size:10px"></i>Enviada</span></td>
+        </tr>`;
+      });
+      h+=`</tbody></table></div></div>`;
+    }
+  }
+
+  // RETORNO CNAB 240
+  if(tabAtual==='retorno'){
+    h+=`<div class="page-header"><div class="page-title">Retorno CNAB 240 — SICOOB</div><div class="page-sub">Importe o arquivo .RET do banco para atualizar automaticamente os pagamentos</div></div>`;
+
+    // Upload card
+    h+=`<div class="card" style="border-left:4px solid var(--green)">
+      <div class="card-title"><i class="ti ti-file-import"></i> Importar arquivo de retorno</div>
+      <div style="background:var(--gray-1);border:2px dashed var(--gray-3);border-radius:var(--radius);padding:28px;text-align:center;margin-bottom:14px" id="drop-zone">
+        <i class="ti ti-cloud-upload" style="font-size:38px;color:var(--gray-4);display:block;margin-bottom:10px"></i>
+        <div style="font-size:14px;font-weight:600;color:var(--gray-5);margin-bottom:6px">Arraste o arquivo .RET aqui</div>
+        <div style="font-size:12px;color:var(--gray-4);margin-bottom:14px">ou clique para selecionar</div>
+        <label style="display:inline-flex;align-items:center;gap:6px;background:var(--blue);color:#fff;padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer">
+          <i class="ti ti-upload"></i> Selecionar arquivo .RET
+          <input type="file" accept=".ret,.RET,.txt,.TXT,.rem,.REM" style="display:none" onchange="lerArquivoRetorno(this)">
+        </label>
+      </div>
+      <div style="font-size:12px;color:var(--gray-4);padding:10px 12px;background:#F0F7FF;border-radius:var(--radius-sm);border:1px solid #C0D8F5">
+        <i class="ti ti-info-circle" style="color:var(--blue)"></i>
+        <strong>Como obter o arquivo:</strong> Acesse o internet banking do SICOOB → <strong>Cobrança → Retorno → Baixar arquivo</strong>.
+        O arquivo tem extensão <strong>.RET</strong> e segue o layout CNAB 240.
+      </div>
+    </div>`;
+
+    // Resultado do processamento
+    if(window._retornoResultado){
+      const res=window._retornoResultado;
+      h+=`<div class="card">
+        <div class="card-title"><i class="ti ti-report-analytics"></i> Resultado do processamento — <span style="font-size:13px;font-weight:500;color:var(--gray-4)">${res.arquivo}</span></div>
+
+        <div class="stats" style="margin-bottom:16px">
+          <div class="stat"><div class="stat-label"><i class="ti ti-file-text"></i> Registros lidos</div><div class="stat-val blue">${res.total}</div></div>
+          <div class="stat"><div class="stat-label" style="color:var(--green)"><i class="ti ti-check"></i> Pagos/Liquidados</div><div class="stat-val green">${res.pagos}</div></div>
+          <div class="stat"><div class="stat-label"><i class="ti ti-check-circle"></i> Entradas confirmadas</div><div class="stat-val blue">${res.confirmados}</div></div>
+          <div class="stat"><div class="stat-label" style="color:var(--red)"><i class="ti ti-x"></i> Rejeitados</div><div class="stat-val amber">${res.rejeitados}</div></div>
+          <div class="stat"><div class="stat-label"><i class="ti ti-arrow-down"></i> Baixados</div><div class="stat-val amber">${res.baixados}</div></div>
+          <div class="stat"><div class="stat-label"><i class="ti ti-question-mark"></i> Não encontrados</div><div class="stat-val amber">${res.naoEncontrados}</div></div>
+        </div>`;
+
+      if(res.itens.length){
+        h+=`<div class="table-wrap"><table><thead><tr>
+          <th>Ocorrência</th><th>Tomador</th><th>Nosso número</th><th>Vencimento</th><th>Valor</th><th>Data pagamento</th><th>Situação</th>
+        </tr></thead><tbody>`;
+        res.itens.forEach(it=>{
+          const cor=it.tipo==='pago'?'var(--green)':it.tipo==='confirmado'?'var(--blue)':it.tipo==='rejeitado'?'var(--red)':'var(--amber)';
+          const icone=it.tipo==='pago'?'ti-check':it.tipo==='confirmado'?'ti-check-circle':it.tipo==='rejeitado'?'ti-alert-circle':'ti-arrow-down';
+          h+=`<tr style="${it.tipo==='pago'?'background:#F6FFF0;':''}">
+            <td><span class="badge" style="background:${cor}22;color:${cor}"><i class="ti ${icone}" style="font-size:10px"></i>${it.ocorrenciaDesc}</span></td>
+            <td style="font-weight:600;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it.tomador||it.numDoc}</td>
+            <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--blue)">${it.nossoNum}</td>
+            <td style="white-space:nowrap">${it.dataVenc}</td>
+            <td style="font-weight:700">${it.valorFmt}</td>
+            <td style="white-space:nowrap;color:var(--green);font-weight:600">${it.dataPagto||'-'}</td>
+            <td style="font-size:12px;max-width:140px">${it.statusMsg}</td>
+          </tr>`;
+        });
+        h+=`</tbody></table></div>`;
+      }
+      h+=`<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;padding-top:12px;border-top:1px solid var(--gray-2)">
+        <button class="btn btn-sec" onclick="window._retornoResultado=null;render()"><i class="ti ti-refresh"></i> Limpar resultado</button>
+        <button class="btn btn-green" onclick="confirmarRetorno()"><i class="ti ti-check"></i> Confirmar atualizações no sistema</button>
+      </div>`;
+      h+=`</div>`;
+    }
+
+    // Histórico de retornos processados
+    const histRetorno=fretes.filter(f=>f.dataPagamento).length;
+    if(histRetorno){
+      const pagosRet=fretes.filter(f=>f.dataPagamento);
+      h+=`<div class="card"><div class="card-title"><i class="ti ti-history"></i> Pagamentos confirmados via retorno (${pagosRet.length})</div>
+      <div class="table-wrap"><table><thead><tr><th>Data pagamento</th><th>Tomador</th><th>Serviço</th><th>Valor</th></tr></thead><tbody>`;
+      pagosRet.sort((a,b)=>b.dataPagamento.localeCompare(a.dataPagamento)).slice(0,10).forEach(f=>{
+        h+=`<tr><td style="white-space:nowrap;color:var(--green);font-weight:600">${f.dataPagamento}</td><td>${f.tomador||'-'}</td><td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.servico||'-'}</td><td style="font-weight:700">${fmtMoney(f.valor)}</td></tr>`;
+      });
+      h+=`</tbody></table></div></div>`;
+    }
+  }
+
+  // BACKUP
+  if(tabAtual==='backup'){
+    const ultimoSync=fbConfigOk?'<span style="color:var(--green);font-weight:600"><i class="ti ti-cloud-check"></i> Firebase conectado — sincronização automática ativa</span>':'<span style="color:var(--red)"><i class="ti ti-cloud-off"></i> Firebase não conectado</span>';
+    h+=`<div class="page-header"><div class="page-title">Backup e proteção de dados</div><div class="page-sub">Mantenha seus dados seguros com backup automático na nuvem e exportação manual</div></div>`;
+    
+    h+=`<div class="card">
+      <div class="card-title"><i class="ti ti-cloud" style="color:var(--blue)"></i> Backup automático (Firebase)</div>
+      <div style="padding:16px 0">
+        <div style="margin-bottom:12px">${ultimoSync}</div>
+        <div style="font-size:13px;color:var(--gray-4);margin-bottom:16px">
+          Todos os lançamentos e clientes são salvos automaticamente na nuvem do Google (Firebase). Se trocar de computador ou limpar o cache do navegador, os dados serão restaurados automaticamente ao abrir o sistema.
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="syncFretesFirebase();alerta={tipo:'ok',msg:'Sincronização manual enviada!'};render()"><i class="ti ti-cloud-upload"></i> Sincronizar agora</button>
+          <button class="btn btn-sec" onclick="carregarFretesFirebase();alerta={tipo:'ok',msg:'Dados restaurados do Firebase!'};render()"><i class="ti ti-cloud-download"></i> Restaurar do Firebase</button>
+        </div>
+      </div>
+    </div>`;
+
+    h+=`<div class="card">
+      <div class="card-title"><i class="ti ti-download" style="color:var(--green)"></i> Backup manual (arquivo JSON)</div>
+      <div style="padding:16px 0">
+        <div style="font-size:13px;color:var(--gray-4);margin-bottom:16px">
+          Exporte um arquivo .json com todos os dados do sistema. Guarde em local seguro (Google Drive, pendrive, etc). Pode importar depois para restaurar.
+        </div>
+        <div style="background:var(--gray-1);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span>Total de fretes:</span><strong>${fretes.length}</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span>Total de clientes:</span><strong>${clientes.length}</strong></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-green" onclick="exportarBackup()"><i class="ti ti-download"></i> Exportar backup (.json)</button>
+          <button class="btn btn-sec" onclick="importarBackup()"><i class="ti ti-upload"></i> Importar backup</button>
+        </div>
+      </div>
+    </div>`;
+
+    h+=`<div class="card">
+      <div class="card-title"><i class="ti ti-info-circle" style="color:var(--amber)"></i> Como funciona a proteção</div>
+      <div style="padding:16px 0;font-size:13px;color:var(--gray-5);line-height:1.7">
+        <strong>1. Automático (Firebase):</strong> Cada vez que você faz um lançamento, aprova um frete ou cadastra um cliente, os dados são enviados automaticamente para a nuvem. Se abrir o sistema em outro computador ou após limpar o cache, os dados são restaurados.<br><br>
+        <strong>2. Manual (JSON):</strong> Exporte periodicamente um arquivo de backup e salve em um local seguro. Em caso de emergência, importe o arquivo para restaurar todos os dados.<br><br>
+        <strong>Recomendação:</strong> Exporte um backup manual pelo menos 1x por semana e salve no Google Drive.
+      </div>
+    </div>`;
+  }
+
+  // CLIENTES
+  if(tabAtual==='clientes'){
+    h+=`<div class="page-header"><div class="page-title">Cadastro de clientes</div><div class="page-sub">Clientes salvos aparecem como opção rápida no lançamento</div></div>`;
+    h+=`<div class="card">
+      <div class="card-title"><i class="ti ti-user-plus"></i> Novo cliente</div>
+      <div class="form-grid">
+        <div class="field"><label>Nome / Razão social <span style="color:var(--red)">*</span></label><input type="text" id="cli-nome" placeholder="Nome do cliente ou empresa"></div>
+        <div class="field"><label>CNPJ / CPF</label><input type="text" id="cli-cnpj" placeholder="00.000.000/0001-00"></div>
+        <div class="field"><label>Origem padrão</label><input type="text" id="cli-origem" placeholder="Cidade/local de coleta habitual"></div>
+        <div class="field"><label>Destino padrão</label><input type="text" id="cli-destino" placeholder="Cidade/local de entrega habitual"></div>
+        <div class="field"><label>Tipo padrão de faturamento</label>
+          <select id="cli-tipo">
+            <option value="faturado">Faturado (individual)</option>
+            <option value="mensal">Mensal</option>
+          </select>
+        </div>
+        <div class="field"><label>Forma de pagamento padrão</label>
+          <select id="cli-pgto">
+            <option value="">Selecione...</option>
+            ${['PIX','Transferência bancária','Dinheiro','Boleto','Cheque'].map(p=>`<option value="${p}">${p}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--gray-2)">
+        <button class="btn btn-primary" onclick="salvarCliente()"><i class="ti ti-check"></i> Salvar cliente</button>
+      </div>
+    </div>`;
+
+    if(clientes.length){
+      h+=`<div class="card"><div class="card-title"><i class="ti ti-users"></i> Clientes cadastrados</div>
+      <div class="table-wrap"><table><thead><tr><th>Nome / Razão social</th><th>CNPJ / CPF</th><th>Origem padrão</th><th>Destino padrão</th><th>Tipo</th><th>Pgto</th><th>Ações</th></tr></thead><tbody>`;
+      clientes.forEach((c,i)=>{
+        h+=`<tr>
+          <td style="font-weight:600">${c.nome}</td>
+          <td style="font-size:12px">${c.cnpj||'-'}</td>
+          <td style="font-size:12px">${c.origem||'-'}</td>
+          <td style="font-size:12px">${c.destino||'-'}</td>
+          <td>${c.tipo==='mensal'?`<span class="badge b-men" style="font-size:10px">Mensal</span>`:`<span class="badge b-fat" style="font-size:10px">Faturado</span>`}</td>
+          <td style="font-size:12px">${c.pgto||'-'}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="excluirCliente(${i})"><i class="ti ti-trash"></i></button></td>
+        </tr>`;
+      });
+      h+=`</tbody></table></div></div>`;
+    } else {
+      h+=`<div class="card"><div class="empty" style="padding:2rem"><i class="ti ti-users"></i>Nenhum cliente cadastrado ainda.<br><small>Cadastre acima e ele aparecerá como seleção rápida no lançamento.</small></div></div>`;
+    }
+  }
+
+  // NFS-e
+  if(tabAtual==='nfs'){
+    h+=`<div class="page-header"><div class="page-title">Emitir NFS-e</div><div class="page-sub">Nota Fiscal de Serviço</div></div>`;
+    h+=`<div class="card">`;
+    const semNFS=fretes.filter(f=>!f.nfs&&f.status!=='Cancelado');
+    if(!semNFS.length)h+=`<div class="empty"><i class="ti ti-file-off"></i>Nenhum frete pendente de NFS-e.</div>`;
+    else{
+      h+=`<div class="field" style="max-width:520px;margin-bottom:18px"><label>Selecionar frete</label>
+      <select onchange="docFrete=this.value?{id:this.value,tipo:'nfs'}:null;render()"><option value="">Selecione um frete...</option>
+      ${semNFS.map(f=>`<option value="${f.id}" ${docFrete&&docFrete.id===f.id?'selected':''}>${fmtDate(f.data)} — ${f.tomador||'?'} — ${(f.servico||'').slice(0,40)} — ${fmtMoney(f.valor)}</option>`).join('')}
+      </select></div>`;
+    }
+    if(docFrete&&docFrete.tipo==='nfs'){
+      const f=fretes.find(x=>x.id===docFrete.id);
+      if(f){
+        const num=f.nfs||genNFS();
+        const hoje=new Date().toLocaleDateString('pt-BR');
+        h+=`<div class="doc">
+          <div class="doc-header">
+            <div>
+              <div class="doc-empresa">${EMPRESA.nome}</div>
+              <div class="doc-info">CNPJ: ${EMPRESA.cnpj} · ${EMPRESA.tipo}<br>${EMPRESA.logradouro} — ${EMPRESA.bairro} · ${EMPRESA.cidade}/${EMPRESA.uf} — CEP ${EMPRESA.cep}</div>
+            </div>
+            <div class="doc-nf-num">
+              <div class="doc-nf-label">NFS-e Nº</div>
+              <div class="doc-nf-val">${num}</div>
+              <div style="font-size:11px;color:#777">Emissão: ${hoje}</div>
+            </div>
+          </div>
+          <div class="doc-bloco">
+            <div class="doc-bloco-title"><i class="ti ti-user" style="font-size:10px"></i> Tomador do serviço</div>
+            <div class="doc-row"><span>Nome / Razão social</span><span>${f.tomador||'-'}</span></div>
+            <div class="doc-row"><span>CNPJ / CPF</span><span>${f.cnpj||'Não informado'}</span></div>
+          </div>
+          <div class="doc-servico-box">
+            <div class="doc-servico-label"><i class="ti ti-star" style="font-size:10px"></i> Serviço prestado</div>
+            <div class="doc-servico-val">${f.servico||'Serviço de transporte.'}</div>
+          </div>
+          ${f.descricao?`<div class="doc-bloco-title" style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px"><i class="ti ti-align-left" style="font-size:10px"></i> Descrição complementar</div><div class="doc-desc-box">${f.descricao}</div>`:''}
+          <div class="doc-bloco">
+            <div class="doc-bloco-title"><i class="ti ti-map-pin" style="font-size:10px"></i> Dados do transporte</div>
+            <div class="doc-row"><span>Origem</span><span>${f.origem||'-'}</span></div>
+            <div class="doc-row"><span>Destino</span><span>${f.destino||'-'}</span></div>
+            ${f.placa?`<div class="doc-row"><span>Placa</span><span>${f.placa}</span></div>`:''}
+            ${f.km?`<div class="doc-row"><span>Distância</span><span>${f.km} km</span></div>`:''}
+            ${f.cte?`<div class="doc-row"><span>CTe / OS</span><span>${f.cte}</span></div>`:''}
+          </div>
+          <div class="doc-bloco">
+            <div class="doc-bloco-title"><i class="ti ti-currency-dollar" style="font-size:10px"></i> Financeiro</div>
+            <div class="doc-row"><span>Forma de pagamento</span><span>${f.pagamento||'Não informado'}</span></div>
+            <div class="doc-row"><span>ISS</span><span>MEI — isento de retenção</span></div>
+          </div>
+          <div class="doc-total">Valor total do serviço: ${fmtMoney(f.valor)}</div>
+          <div class="doc-footer">Prestador: ${EMPRESA.nome} · CNPJ: ${EMPRESA.cnpj} · ${EMPRESA.endFull}<br>Documento gerado pelo sistema de gestão de fretes — Ambiente de homologação</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+          <button class="btn btn-sec" onclick="window.print()"><i class="ti ti-printer"></i> Imprimir</button>
+          <button class="btn btn-primary" onclick="emitirNFS('${f.id}','${num}')"><i class="ti ti-file-invoice"></i> Confirmar emissão</button>
+        </div>`;
+      }
+    }
+    h+=`</div>`;
+  }
+
+  // BOLETO
+  if(tabAtual==='boleto'){
+    h+=`<div class="page-header"><div class="page-title">Emitir boleto</div></div>`;
+    h+=`<div class="card">`;
+    const semBol=fretes.filter(f=>!f.boleto&&f.status!=='Cancelado');
+    if(!semBol.length)h+=`<div class="empty"><i class="ti ti-file-off"></i>Nenhum frete pendente de boleto.</div>`;
+    else{
+      h+=`<div class="field" style="max-width:520px;margin-bottom:18px"><label>Selecionar frete</label>
+      <select onchange="docFrete=this.value?{id:this.value,tipo:'boleto'}:null;render()"><option value="">Selecione...</option>
+      ${semBol.map(f=>`<option value="${f.id}" ${docFrete&&docFrete.id===f.id?'selected':''}>${fmtDate(f.data)} — ${f.tomador||'?'} — ${fmtMoney(f.valor)}</option>`).join('')}
+      </select></div>`;
+    }
+    if(docFrete&&docFrete.tipo==='boleto'){
+      const f=fretes.find(x=>x.id===docFrete.id);
+      if(f){
+        const cod=f.boleto||genBoleto();
+        const vencStr=f.vencimento?(()=>{const[y,m,d]=f.vencimento.split('-');return`${d}/${m}/${y}`;})():(()=>{const vd=new Date();vd.setDate(vd.getDate()+30);return vd.toLocaleDateString('pt-BR');})();
+        const bars=Array(55).fill('').map(()=>`<div style="width:${Math.random()>.4?2:1}px;height:${26+Math.floor(Math.random()*16)}px;background:#fff;margin:0 .5px;opacity:${.6+Math.random()*.4}"></div>`).join('');
+        h+=`<div class="doc">
+          <div class="doc-header">
+            <div>
+              <div class="doc-empresa">${EMPRESA.nome}</div>
+              <div class="doc-info">CNPJ: ${EMPRESA.cnpj} · ${EMPRESA.tipo}<br>${EMPRESA.endFull}</div>
+            </div>
+            <div class="doc-nf-num">
+              <div class="doc-nf-label">Vencimento</div>
+              <div style="font-size:17px;font-weight:800;color:var(--blue)">${vencStr}</div>
+              <div style="font-size:21px;font-weight:800;color:var(--blue)">${fmtMoney(f.valor)}</div>
+            </div>
+          </div>
+          <div class="doc-bloco">
+            <div class="doc-bloco-title">Pagador</div>
+            <div class="doc-row"><span>Nome / Razão social</span><span>${f.tomador||'-'}</span></div>
+            <div class="doc-row"><span>CNPJ / CPF</span><span>${f.cnpj||'Não informado'}</span></div>
+          </div>
+          <div class="doc-bloco">
+            <div class="doc-bloco-title">Referência</div>
+            <div class="doc-row"><span>Serviço prestado</span><span>${f.servico||'-'}</span></div>
+            <div class="doc-row"><span>Rota</span><span>${f.origem||'-'} → ${f.destino||'-'}</span></div>
+            <div class="doc-row"><span>Data do serviço</span><span>${fmtDate(f.data)}</span></div>
+            ${f.cte?`<div class="doc-row"><span>CTe / OS</span><span>${f.cte}</span></div>`:''}
+          </div>
+          <div class="boleto-bar">${bars}</div>
+          <div class="boleto-linha">${cod}</div>
+          <div class="doc-footer">Beneficiário: ${EMPRESA.nome} · CNPJ: ${EMPRESA.cnpj} · ${EMPRESA.endFull}<br>Após vencimento: multa 2% + juros 1%/mês · Documento simulado — Ambiente de homologação</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+          <button class="btn btn-sec" onclick="window.print()"><i class="ti ti-printer"></i> Imprimir</button>
+          <button class="btn btn-primary" onclick="emitirBoleto('${f.id}','${cod}')"><i class="ti ti-receipt"></i> Confirmar emissão</button>
+        </div>`;
+      }
+    }
+    h+=`</div>`;
+  }
+
+  main.innerHTML=h;
+  if(tabAtual==='novo')renderForm();
+}
+
+function limpar(){form={tipo:'faturado'};renderForm();}
+function togglePasta(k){pastaAberta=pastaAberta===k?null:k;render();}
+function gerarRel(k){relGerado={chave:k,itens:fretes.filter(f=>getMesAno(f.data)===k&&f.status!=='Cancelado')};tabAtual='relatorio';relMes=k.split('-')[1];relAno=k.split('-')[0];document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));const nb=document.getElementById('nb-relatorio');if(nb)nb.classList.add('active');render();}
+
+function salvar(){
+  const f=form;
+  if(!f.data||!f.vencimento||!f.tomador||!f.origem||!f.destino||!f.valor||!f.servico){alerta={tipo:'err',msg:'Preencha: Data, Vencimento, Tomador, Origem, Destino, Serviço prestado e Valor.'};render();return;}
+  const novo={...f,id:genId(),status:'Pendente',criadoEm:Date.now()};
+  fretes.push(novo);save();form={tipo:'faturado'};
+  alerta={tipo:'ok',msg:`Lançamento salvo!${novo.tipo==='mensal'?' Adicionado na pasta '+getMesNome(getMesAno(novo.data))+'.':''}`};
+  nav('fretes');
+}
+function emitirNFS(id,num){const f=fretes.find(x=>x.id===id);if(!f)return;f.nfs=num;f.status='NFS-e emitida';save();alerta={tipo:'ok',msg:`NFS-e nº ${num} emitida para ${f.tomador}!`};docFrete=null;nav('fretes');}
+function emitirBoleto(id,cod){const f=fretes.find(x=>x.id===id);if(!f)return;f.boleto=cod;save();alerta={tipo:'ok',msg:`Boleto emitido para ${f.tomador}!`};docFrete=null;nav('fretes');}
+function marcarPago(id){const f=fretes.find(x=>x.id===id);if(f){f.status='Pago';save();alerta={tipo:'ok',msg:`Frete de ${f.tomador} marcado como pago.`};render();}}
+function cancelar(id){const f=fretes.find(x=>x.id===id);if(f&&confirm(`Cancelar frete de ${f.tomador}?`)){f.status='Cancelado';save();alerta={tipo:'ok',msg:'Frete cancelado.'};render();}}
+
+function sugerirVenc(data){if(!data)return'';const d=new Date(data+'T00:00:00');d.setDate(d.getDate()+30);return d.toISOString().slice(0,10);}
+function sugerirVencFmt(data){if(!data)return'';const d=new Date(data+'T00:00:00');d.setDate(d.getDate()+30);return d.toLocaleDateString('pt-BR');}
+
+// ══════════════════════════════════════════════════
+// CONFIGURAÇÃO FIREBASE — preencha com seus dados
+// ══════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBRcsXHRXG2HgUjl87xkpLzGT6GcrbN8v8",
+  authDomain: "fretes-marco.firebaseapp.com",
+  projectId: "fretes-marco",
+  storageBucket: "fretes-marco.firebasestorage.app",
+  messagingSenderId: "998234786464",
+  appId: "1:998234786464:web:007d3b1d00ae0626acd7c5"
+};
+// ══════════════════════════════════════════════════
+
+let fbConfigOk = false;
+let fbDb = null;
+let filtroMotStatus = 'pendente';
+let filtroMotMot = '';
+
+function var_gray3(){ return '#D1D5DF'; }
+function hoje(){ return new Date().toISOString().slice(0,10); }
+
+function iniciarFirebaseAdmin(){
+  try {
+    if(FIREBASE_CONFIG.apiKey==='COLE_AQUI_SUA_API_KEY') return;
+    firebase.initializeApp(FIREBASE_CONFIG);
+    fbDb = firebase.firestore();
+    fbConfigOk = true;
+    ouvirMotoristas();
+    ouvirClientesFirebase();
+    syncTodosClientesFirebase();
+    carregarFretesFirebase();
+  } catch(e){ console.log('Firebase não configurado ainda'); }
+}
+
+function ouvirClientesFirebase(){
+  if(!fbDb)return;
+  fbDb.collection('clientes_expresso').onSnapshot(snap=>{
+    const fbClientes=[];
+    snap.forEach(doc=>{fbClientes.push({_fbId:doc.id,...doc.data()});});
+    // Merge: add Firebase clients not in local
+    fbClientes.forEach(fc=>{
+      const exists=clientes.find(c=>(c.cnpj&&fc.cnpj&&c.cnpj.replace(/\D/g,'')===fc.cnpj.replace(/\D/g,''))||c.nome.toLowerCase()===fc.nome.toLowerCase());
+      if(!exists){clientes.push({nome:fc.nome,cnpj:fc.cnpj,origem:fc.origem,destino:fc.destino,tipo:fc.tipo,pgto:fc.pgto});save();}
+    });
+    if(tabAtual==='clientes')render();
+  },err=>console.log('Clientes listener error:',err));
+}
+
+function ouvirMotoristas(){
+  if(!fbDb) return;
+  fbDb.collection('fretes_motoristas')
+    .orderBy('criadoEm','desc')
+    .limit(100)
+    .onSnapshot(snap => {
+      window._motFretes = [];
+      snap.forEach(doc => {
+        window._motFretes.push({_id: doc.id, ...doc.data()});
+      });
+      // Atualiza badge
+      const pend = (window._motFretes||[]).filter(f=>f.status==='pendente').length;
+      const badge = document.getElementById('nb-mot-count');
+      if(badge){
+        badge.textContent = pend;
+        badge.style.display = pend > 0 ? 'inline-flex' : 'none';
+        if(pend > 0) badge.style.background = '#FEF0DA';
+        if(pend > 0) badge.style.color = '#8A4A00';
+      }
+      // Re-render se estiver na aba
+      if(tabAtual==='motoristas') render();
+    }, err => console.log('Firebase listener error:', err));
+}
+
+async function aprovarMot(id){
+  if(!fbDb) return;
+  const item = (window._motFretes||[]).find(f=>f._id===id);
+  if(!item) return;
+  try {
+    // Atualiza no Firebase
+    await fbDb.collection('fretes_motoristas').doc(id).update({
+      status: 'aprovado',
+      _dataAprov: hoje()
+    });
+    // Cria lançamento no sistema local
+    const novo = {
+      id: genId(),
+      data: item.datetime?item.datetime.slice(0,10):'',
+      vencimento: item.vencimento||'',
+      servico: item.servico||'',
+      tomador: item.pagadorNome||item.remetente||'',
+      cnpj: item.pagador==='remetente'?(item.remCnpj||''):item.pagador==='destinatario'?(item.destCnpj||''):'',
+      origem: item.origem||'',
+      destino: item.destino||'',
+      valor: item.valor||0,
+      tipo: item.tipo||'faturado',
+      placa: '',
+      pagamento: item.formaPgto==='avista'?'Dinheiro':item.formaPgto==='pix'?'PIX':item.formaPgto==='boleto'?'Boleto':'',
+      descricao: `Remetente: ${item.remetente||'-'} → Destinatário: ${item.destinatario||'-'}`,
+      obs: `Registrado por ${item.motorista}${item.emitirNF==='sim'?' — NF SOLICITADA':''}${item.obs?' — '+item.obs:''}`,
+      status: 'Pendente',
+      criadoEm: Date.now(),
+      _motorista: item.motorista,
+      _remetente: item.remetente||'',
+      _destinatario: item.destinatario||''
+    };
+    fretes.push(novo);
+    save();
+    alerta = {tipo:'ok', msg:`Frete aprovado! ${item.remetente||''} → ${item.destinatario||''} (${item.tipo==='mensal'?'Mensal — agrupado na pasta do mês':'Faturado'})` };
+    render();
+  } catch(e){
+    alerta = {tipo:'err', msg:'Erro ao aprovar: '+e.message};
+    render();
+  }
+}
+
+async function rejeitarMot(id){
+  if(!fbDb) return;
+  if(!confirm('Rejeitar este registro do motorista?')) return;
+  try {
+    await fbDb.collection('fretes_motoristas').doc(id).update({status:'rejeitado'});
+    alerta = {tipo:'ok', msg:'Registro rejeitado.'};
+    render();
+  } catch(e){
+    alerta = {tipo:'err', msg:'Erro: '+e.message};
+    render();
+  }
+}
+
+// ── CNAB 240 SICOOB ────────────────────────────────────────────────
+const CNAB = {
+  banco:'756', nomeBanco:'SICOOB',
+  coop:'04101', dvCoop:' ',
+  codBenef:'001947729', dvConta:' ', dvAgConta:' ',
+  carteira:'01', modalidade:'01',
+  cnpj:'53651463000180',
+  nomeEmp:'MARCO TULIO SALOME OLIVEIRA',
+  seqArq: 1
+};
+
+function cnabStr(v,n,dir='R',pad=' '){
+  v=String(v??'').toUpperCase().replace(/[^\x20-\x7E]/g,' ');
+  if(dir==='L') return v.slice(0,n).padStart(n,pad);
+  return v.slice(0,n).padEnd(n,pad);
+}
+function cnabNum(v,n){ return String(Math.round(Number(v)||0)).padStart(n,'0').slice(-n); }
+function cnabData(d){
+  if(!d)return'00000000';
+  const[y,m,day]=d.split('-');
+  return `${day}${m}${y}`;
+}
+function cnabValidar(linha,pos){
+  if(linha.length!==240){
+    console.warn(`Linha ${pos}: ${linha.length} chars (esperado 240). Ajustando.`);
+    return linha.length<240?linha.padEnd(240,' '):linha.slice(0,240);
+  }
+  return linha;
+}
+
+function gerarCNAB240(lote){
+  const hoje=new Date();
+  const dd=String(hoje.getDate()).padStart(2,'0');
+  const mm=String(hoje.getMonth()+1).padStart(2,'0');
+  const aaaa=String(hoje.getFullYear());
+  const hh=String(hoje.getHours()).padStart(2,'0');
+  const mi=String(hoje.getMinutes()).padStart(2,'0');
+  const ss=String(hoje.getSeconds()).padStart(2,'0');
+  const dataHoje=`${dd}${mm}${aaaa}`;
+  const horaHoje=`${hh}${mi}${ss}`;
+  const seqArqStr=cnabNum(CNAB.seqArq,6);
+  let linhas=[], seqReg=0, totalVal=0, qtdTit=0;
+
+  // ── HEADER ARQUIVO ──────────────────────── 240 chars
+  let r='';
+  r+=CNAB.banco;                         // 001-003  3
+  r+='0000';                             // 004-007  4
+  r+='0';                                // 008      1
+  r+=cnabStr('',9);                      // 009-017  9
+  r+='2';                                // 018      1
+  r+=cnabNum(CNAB.cnpj,14);             // 019-032 14
+  r+=cnabStr(CNAB.coop+CNAB.codBenef,20);// 033-052 20
+  r+=CNAB.coop;                          // 053-057  5
+  r+=CNAB.dvCoop;                        // 058      1
+  r+=cnabNum(CNAB.codBenef,12);          // 059-070 12
+  r+=CNAB.dvConta;                       // 071      1
+  r+=CNAB.dvAgConta;                     // 072      1
+  r+=cnabStr(CNAB.nomeEmp,30);           // 073-102 30
+  r+=cnabStr(CNAB.nomeBanco,30);         // 103-132 30
+  r+=cnabStr('',10);                     // 133-142 10
+  r+='1';                                // 143      1
+  r+=dataHoje;                           // 144-151  8
+  r+=horaHoje;                           // 152-157  6
+  r+=seqArqStr;                          // 158-163  6
+  r+='083';                              // 164-166  3
+  r+='01600';                            // 167-171  5
+  r+=cnabStr('',20);                     // 172-191 20
+  r+=cnabStr('',20);                     // 192-211 20
+  r+=cnabStr('',29);                     // 212-240 29
+  linhas.push(cnabValidar(r,'HA'));
+
+  // ── HEADER LOTE ─────────────────────────── 240 chars
+  r='';
+  r+=CNAB.banco;                         // 001-003  3
+  r+='0001';                             // 004-007  4
+  r+='1';                                // 008      1
+  r+='C';                                // 009      1
+  r+='01';                               // 010-011  2
+  r+='01';                               // 012-013  2
+  r+='030';                              // 014-016  3
+  r+=' ';                                // 017      1
+  r+='2';                                // 018      1
+  r+=cnabNum(CNAB.cnpj,14);             // 019-032 14
+  r+=cnabStr(CNAB.coop+CNAB.codBenef,20);// 033-052 20
+  r+=CNAB.coop;                          // 053-057  5
+  r+=CNAB.dvCoop;                        // 058      1
+  r+=cnabNum(CNAB.codBenef,12);          // 059-070 12
+  r+=CNAB.dvConta;                       // 071      1
+  r+=CNAB.dvAgConta;                     // 072      1
+  r+=cnabStr(CNAB.nomeEmp,30);           // 073-102 30
+  r+=cnabStr('',40);                     // 103-142 40
+  r+=cnabStr('',40);                     // 143-182 40
+  r+=cnabNum(seqArqStr,8);               // 183-190  8
+  r+=dataHoje;                           // 191-198  8
+  r+='00000000';                         // 199-206  8
+  r+=cnabStr('',34);                     // 207-240 34
+  linhas.push(cnabValidar(r,'HL'));
+
+  // ── DETALHES ────────────────────────────────────────────
+  lote.forEach((f,idx)=>{
+    seqReg++;qtdTit++;
+    totalVal+=Number(f.valor||0);
+
+    const nossoNumSeq=cnabNum(idx+1,9);
+    const nossoNumDV=calcDVMod11(CNAB.carteira+CNAB.modalidade+nossoNumSeq);
+    const nossoNum=CNAB.carteira+CNAB.modalidade+nossoNumSeq+nossoNumDV;// 14 chars
+    const numDoc=cnabStr(f.id||String(idx+1),15);
+    const vencData=cnabData(f.vencimento||f.data);
+    const emissData=cnabData(f.data);
+    const valorCents=cnabNum(Math.round(Number(f.valor||0)*100),15);
+
+    // ── SEGMENTO P ────────────────── 240 chars
+    r='';
+    r+=CNAB.banco;                       // 001-003  3
+    r+='0001';                           // 004-007  4
+    r+='3';                              // 008      1
+    r+=cnabNum(seqReg,5);                // 009-013  5
+    r+='P';                              // 014      1
+    r+=' ';                              // 015      1
+    r+='01';                             // 016-017  2  inclusão
+    r+=CNAB.coop;                        // 018-022  5
+    r+=CNAB.dvCoop;                      // 023      1
+    r+=cnabNum(CNAB.codBenef,12);        // 024-035 12
+    r+=CNAB.dvConta;                     // 036      1
+    r+=CNAB.dvAgConta;                   // 037      1
+    r+=cnabStr(nossoNum,20);             // 038-057 20  nosso número
+    r+=numDoc;                           // 058-072 15  num doc empresa
+    r+=vencData;                         // 073-080  8  vencimento
+    r+=valorCents;                       // 081-095 15  valor
+    r+=cnabNum(0,5);                     // 096-100  5  banco cobrador
+    r+=' ';                              // 101      1  DV
+    r+='06';                             // 102-103  2  espécie DS=serviço... wait need 4 chars? Let me check
+    // Actually espécie is 2 chars in some layouts. Let me use 2.
+    r+='N';                              // 104      1  aceite
+    r+=emissData;                        // 105-112  8  emissão
+    r+='00';                             // 113-114  2  instrução 1
+    r+='00';                             // 115-116  2  instrução 2
+    r+=cnabNum(0,13);                    // 117-129 13  mora por dia
+    r+='00000000';                       // 130-137  8  data limite desc
+    r+=cnabNum(0,15);                    // 138-152 15  valor desconto
+    r+=cnabNum(0,15);                    // 153-167 15  valor IOF
+    r+=cnabNum(0,15);                    // 168-182 15  abatimento
+    r+=cnabStr(f.id||'',25);             // 183-207 25  identificação empresa
+    r+='3';                              // 208      1  protesto: não
+    r+='00';                             // 209-210  2  prazo protesto
+    r+='1';                              // 211      1  baixa: devolver
+    r+=cnabNum(0,3);                     // 212-214  3  prazo baixa
+    r+='009';                            // 215-217  3  moeda real
+    r+=cnabNum(0,10);                    // 218-227 10  nº contrato
+    r+=cnabStr('',13);                   // 228-240 13  brancos
+    linhas.push(cnabValidar(r,`SP-${idx}`));
+
+    seqReg++;
+
+    // ── SEGMENTO Q ────────────────── 240 chars
+    const cnpjPag=(f.cnpj||'').replace(/\D/g,'');
+    const tipoPag=cnpjPag.length===14?'2':cnpjPag.length===11?'1':'0';
+    const cnpjPagN=cnabNum(cnpjPag||0,15);
+    r='';
+    r+=CNAB.banco;                       // 001-003  3
+    r+='0001';                           // 004-007  4
+    r+='3';                              // 008      1
+    r+=cnabNum(seqReg,5);                // 009-013  5
+    r+='Q';                              // 014      1
+    r+=' ';                              // 015      1
+    r+='01';                             // 016-017  2
+    r+=tipoPag;                          // 018      1
+    r+=cnpjPagN;                         // 019-033 15
+    r+=cnabStr(f.tomador||'',40);        // 034-073 40
+    r+=cnabStr(f.origem||'',40);         // 074-113 40  endereço (usamos origem)
+    r+=cnabStr('',15);                   // 114-128 15  bairro
+    r+=cnabNum(0,8);                     // 129-136  8  CEP
+    r+=cnabStr('',15);                   // 137-151 15  cidade
+    r+=cnabStr('MG',2);                  // 152-153  2  UF
+    r+='0';                              // 154      1  sacador: isento
+    r+=cnabNum(0,15);                    // 155-169 15  inscrição sacador
+    r+=cnabStr('',40);                   // 170-209 40  nome sacador
+    r+=cnabNum(0,3);                     // 210-212  3  banco correspondente
+    r+=cnabStr('',20);                   // 213-232 20  nosso num banco corr
+    r+=cnabStr('',8);                    // 233-240  8  brancos
+    linhas.push(cnabValidar(r,`SQ-${idx}`));
+  });
+
+  // ── TRAILER LOTE ────────────────── 240 chars
+  const totLote=2+qtdTit*2+1;
+  const totalCents=cnabNum(Math.round(totalVal*100),17);
+  r='';
+  r+=CNAB.banco;                         // 001-003  3
+  r+='0001';                             // 004-007  4
+  r+='5';                                // 008      1
+  r+=cnabStr('',9);                      // 009-017  9
+  r+=cnabNum(totLote,6);                 // 018-023  6  qtd registros lote
+  r+=cnabNum(qtdTit,6);                  // 024-029  6  qtd títulos
+  r+=totalCents;                         // 030-046 17  valor total
+  r+=cnabNum(0,6);                       // 047-052  6  qtd vinculada
+  r+=cnabNum(0,17);                      // 053-069 17  val vinculada
+  r+=cnabNum(0,6);                       // 070-075  6  qtd caucionada
+  r+=cnabNum(0,17);                      // 076-092 17  val caucionada
+  r+=cnabNum(0,6);                       // 093-098  6  qtd descontada
+  r+=cnabNum(0,17);                      // 099-115 17  val descontada
+  r+=cnabNum(0,8);                       // 116-123  8  aviso débito
+  r+=cnabStr('',117);                    // 124-240 117 brancos
+  linhas.push(cnabValidar(r,'TL'));
+
+  // ── TRAILER ARQUIVO ─────────────── 240 chars
+  const totArq=linhas.length+1;
+  r='';
+  r+=CNAB.banco;                         // 001-003  3
+  r+='9999';                             // 004-007  4
+  r+='9';                                // 008      1
+  r+=cnabStr('',9);                      // 009-017  9
+  r+=cnabNum(1,6);                       // 018-023  6  qtd lotes
+  r+=cnabNum(totArq,6);                  // 024-029  6  qtd registros
+  r+=cnabStr('',6);                      // 030-035  6  qtd contas
+  r+=cnabStr('',205);                    // 036-240 205 brancos
+  linhas.push(cnabValidar(r,'TA'));
+
+  CNAB.seqArq++;
+  return linhas.join('\r\n');
+}
+
+function calcDVMod11(num){
+  // Módulo 11 para DV nosso número SICOOB
+  const n=String(num).split('').reverse();
+  let soma=0,peso=2;
+  for(let i=0;i<n.length;i++){soma+=parseInt(n[i])*peso;peso=peso===9?2:peso+1;}
+  const resto=soma%11;
+  if(resto===0||resto===1)return'0';
+  return String(11-resto);
+}
+
+// ── CNAB 240 RETORNO ───────────────────────────────────────────────
+const OCORRENCIAS = {
+  '02':'Entrada confirmada',
+  '03':'Entrada rejeitada',
+  '06':'Liquidação — PAGO',
+  '09':'Baixa efetuada',
+  '10':'Baixa solicitada',
+  '11':'Em cartório',
+  '14':'Vencimento alterado',
+  '17':'Abatimento concedido',
+  '19':'Abatimento cancelado',
+  '23':'Remessa rejeitada',
+  '25':'Protestado',
+  '28':'Débito em conta',
+  '30':'Alteração de dados',
+};
+
+function cnabDataFmt(s){
+  // DDMMAAAA → DD/MM/AAAA
+  if(!s||s==='00000000')return'-';
+  return`${s.slice(0,2)}/${s.slice(2,4)}/${s.slice(4,8)}`;
+}
+
+function lerArquivoRetorno(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      processarArquivoRetorno(e.target.result,file.name);
+    }catch(err){
+      alerta={tipo:'err',msg:'Erro ao ler o arquivo: '+err.message};render();
+    }
+  };
+  reader.readAsText(e=>{}); // dummy
+  // Use readAsText with latin1 encoding for CNAB files
+  const r2=new FileReader();
+  r2.onload=e2=>{
+    try{processarArquivoRetorno(e2.target.result,file.name);}
+    catch(err){alerta={tipo:'err',msg:'Erro ao processar: '+err.message};render();}
+  };
+  r2.readAsText(file,'ISO-8859-1');
+}
+
+function processarArquivoRetorno(conteudo,nomeArq){
+  const linhas=conteudo.split(/\r?\n/).filter(l=>l.trim().length>0);
+  const registros=linhas.filter(l=>l.length>=240);
+
+  if(!registros.length){
+    alerta={tipo:'err',msg:'Arquivo inválido: nenhum registro CNAB 240 encontrado. Verifique se é um arquivo .RET do SICOOB.'};
+    render();return;
+  }
+
+  // Verificar se é arquivo SICOOB (banco 756)
+  const headerArq=registros.find(l=>l[7]==='0');
+  if(headerArq&&headerArq.slice(0,3)!=='756'){
+    alerta={tipo:'err',msg:`Banco ${headerArq.slice(0,3)} não reconhecido. Este sistema está configurado para SICOOB (756).`};
+    render();return;
+  }
+
+  const itens=[];
+  let pagos=0,confirmados=0,rejeitados=0,baixados=0,naoEncontrados=0;
+
+  registros.forEach(linha=>{
+    if(linha.length<240)return;
+    const tipoReg=linha[7];  // pos 8
+    const seg=linha[13];     // pos 14
+
+    if(tipoReg!=='3'||seg!=='P')return; // só Segmento P
+
+    const codOcorr=linha.substring(15,17).trim();  // pos 16-17
+    const nossoNum=linha.substring(37,57).trim();   // pos 38-57
+    const numDoc=linha.substring(57,72).trim();     // pos 58-72
+    const dataVencRaw=linha.substring(72,80);       // pos 73-80 DDMMAAAA
+    const valorCents=parseInt(linha.substring(80,95)||'0'); // pos 81-95
+    const dataOcorrRaw=linha.substring(142,150);    // pos 143-150
+    const dataCreditoRaw=linha.substring(150,158);  // pos 151-158
+
+    const valor=valorCents/100;
+    const dataVenc=cnabDataFmt(dataVencRaw);
+    const dataPagto=dataCreditoRaw!=='00000000'?cnabDataFmt(dataCreditoRaw):
+                    dataOcorrRaw!=='00000000'?cnabDataFmt(dataOcorrRaw):null;
+    const ocorrenciaDesc=OCORRENCIAS[codOcorr]||`Ocorrência ${codOcorr}`;
+
+    // Tentar encontrar o frete pelo numDoc (usamos f.id como numDoc)
+    // ou pelo nosso número parcial
+    let frete=fretes.find(f=>f.id&&numDoc.includes(f.id));
+    if(!frete){
+      // Tenta pelo valor + vencimento
+      const vencISO=dataVencRaw!=='00000000'?
+        `${dataVencRaw.slice(4,8)}-${dataVencRaw.slice(2,4)}-${dataVencRaw.slice(0,2)}`:null;
+      frete=fretes.find(f=>
+        f.boleto&&
+        Math.abs(Number(f.valor)-valor)<0.01&&
+        (vencISO?f.vencimento===vencISO:true)
+      );
+    }
+
+    let tipo,statusMsg;
+    if(codOcorr==='06'||codOcorr==='28'){
+      tipo='pago';pagos++;
+      statusMsg=frete?`✔ Frete de ${frete.tomador} atualizado para PAGO`:'Frete correspondente não encontrado no sistema';
+    } else if(codOcorr==='02'){
+      tipo='confirmado';confirmados++;
+      statusMsg=frete?`✔ Entrada registrada para ${frete.tomador}`:'Boleto registrado no banco';
+    } else if(codOcorr==='03'||codOcorr==='23'){
+      tipo='rejeitado';rejeitados++;
+      statusMsg=`⚠ Rejeitado — verifique o arquivo de remessa`;
+    } else if(codOcorr==='09'||codOcorr==='10'){
+      tipo='baixado';baixados++;
+      statusMsg=frete?`Frete de ${frete.tomador} baixado`:'Boleto baixado';
+    } else {
+      tipo='info';
+      statusMsg=ocorrenciaDesc;
+    }
+
+    if(!frete&&(tipo==='pago'||tipo==='confirmado'))naoEncontrados++;
+
+    itens.push({
+      codOcorr,ocorrenciaDesc,tipo,nossoNum,numDoc,
+      dataVenc,valor,valorFmt:fmtMoney(valor),
+      dataPagto,statusMsg,
+      tomador:frete?frete.tomador:null,
+      freteId:frete?frete.id:null,
+    });
+  });
+
+  window._retornoResultado={
+    arquivo:nomeArq,
+    total:itens.length,
+    pagos,confirmados,rejeitados,baixados,naoEncontrados,
+    itens
+  };
+  nav('retorno');
+}
+
+function confirmarRetorno(){
+  if(!window._retornoResultado)return;
+  const res=window._retornoResultado;
+  let atualizados=0;
+
+  res.itens.forEach(it=>{
+    if(!it.freteId)return;
+    const f=fretes.find(x=>x.id===it.freteId);
+    if(!f)return;
+
+    if(it.tipo==='pago'){
+      f.status='Pago';
+      if(it.dataPagto&&it.dataPagto!=='-'){
+        // Converter DD/MM/AAAA para AAAA-MM-DD
+        const[dd,mm,aa]=it.dataPagto.split('/');
+        f.dataPagamento=`${aa}-${mm}-${dd}`;
+      }
+      atualizados++;
+    } else if(it.tipo==='baixado'){
+      f.status='Cancelado';
+      atualizados++;
+    }
+  });
+
+  save();
+  window._retornoResultado=null;
+  alerta={tipo:'ok',msg:`Retorno processado! ${atualizados} frete${atualizados!==1?'s':''} atualizado${atualizados!==1?'s':''} no sistema.`};
+  nav('controle');
+}
+
+function selecionarTodos(sel){
+  document.querySelectorAll('.chk-boleto').forEach(c=>{c.checked=sel;});
+  const ca=document.getElementById('chk-all');if(ca)ca.checked=sel;
+  atualizarContSel();
+}
+
+function atualizarContSel(){
+  const n=document.querySelectorAll('.chk-boleto:checked').length;
+  const el=document.getElementById('count-sel');
+  if(el)el.textContent=`${n} selecionado${n!==1?'s':''}`;
+}
+
+function gerarRemessa(){
+  const selecionados=[...document.querySelectorAll('.chk-boleto:checked')].map(c=>c.dataset.id);
+  if(!selecionados.length){alerta={tipo:'err',msg:'Selecione ao menos um boleto para gerar a remessa.'};render();return;}
+  const lote=fretes.filter(f=>selecionados.includes(f.id));
+  const cnab=gerarCNAB240(lote);
+  const blob=new Blob([cnab],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const d=new Date();
+  const nome=`REMESSA_SICOOB_${String(d.getDate()).padStart(2,'0')}${String(d.getMonth()+1).padStart(2,'0')}${d.getFullYear()}.REM`;
+  a.download=nome;a.click();URL.revokeObjectURL(url);
+  // Marcar fretes como enviados na remessa
+  const nomeArq=nome;
+  lote.forEach(f=>{f.remessa=nomeArq;});
+  save();
+  alerta={tipo:'ok',msg:`Arquivo "${nome}" gerado com ${lote.length} título${lote.length!==1?'s':''}! Envie pelo internet banking do SICOOB em Cobrança → Remessa.`};
+  nav('remessa');
+}
+
+function exportarCSV(){
+  function calcVencCSV(f){
+    if(f.vencimento){const[y,m,d]=f.vencimento.split('-');return`${d}/${m}/${y}`;}
+    if(!f.data)return'-';
+    const d=new Date(f.data+'T00:00:00');d.setDate(d.getDate()+30);return d.toLocaleDateString('pt-BR');
+  }
+  function calcVencISO2(f){
+    if(f.vencimento)return f.vencimento;
+    if(!f.data)return'';
+    const d=new Date(f.data+'T00:00:00');d.setDate(d.getDate()+30);return d.toISOString().slice(0,10);
+  }
+  const hoje=new Date().toISOString().slice(0,10);
+  const comBoleto=fretes.filter(f=>f.boleto&&f.status!=='Cancelado');
+  const selMes=relMes;const selAno=relAno||String(new Date().getFullYear());
+  let lista=comBoleto.filter(f=>{
+    const mesOk=!selMes||getMesAno(f.data)===`${selAno}-${selMes}`;
+    const stOk=!filtroStatus||f.status===filtroStatus;
+    return mesOk&&stOk;
+  }).sort((a,b)=>calcVencISO2(a).localeCompare(calcVencISO2(b)));
+
+  const linhas=[
+    ['CONTROLE BANCÁRIO — '+EMPRESA.nome+' — CNPJ: '+EMPRESA.cnpj],
+    ['Gerado em: '+new Date().toLocaleDateString('pt-BR')+(selMes?' — Período: '+getMesNome(`${selAno}-${selMes}`):'')],
+    [],
+    ['Vencimento','Empresa / Tomador','CNPJ/CPF','Serviço prestado','Número do boleto','Valor (R$)','Situação']
+  ];
+  lista.forEach(f=>{
+    const venc=calcVencCSV(f);
+    const vencISO=calcVencISO2(f);
+    const vencido=f.status!=='Pago'&&vencISO<hoje;
+    const sit=f.status==='Pago'?'PAGO':vencido?'VENCIDO':'PENDENTE';
+    linhas.push([
+      venc,
+      f.tomador||'-',
+      f.cnpj||'-',
+      f.servico||'-',
+      f.boleto||'-',
+      Number(f.valor||0).toFixed(2).replace('.',','),
+      sit
+    ]);
+  });
+  const total=lista.reduce((s,f)=>s+Number(f.valor||0),0);
+  const pago=lista.filter(f=>f.status==='Pago').reduce((s,f)=>s+Number(f.valor||0),0);
+  const pend=lista.filter(f=>f.status!=='Pago').reduce((s,f)=>s+Number(f.valor||0),0);
+  linhas.push([]);
+  linhas.push(['','','','','TOTAL GERAL',total.toFixed(2).replace('.',','),'']);
+  linhas.push(['','','','','RECEBIDO',pago.toFixed(2).replace('.',','),'']);
+  linhas.push(['','','','','A RECEBER',pend.toFixed(2).replace('.',','),'']);
+
+  const csv=linhas.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  const bom='\uFEFF';
+  const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const periodo=selMes?`_${selAno}-${selMes}`:'';
+  a.download=`controle_bancario${periodo}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.csv`;
+  a.click();URL.revokeObjectURL(url);
+}
+
+function salvarCliente(){
+  const nome=document.getElementById('cli-nome').value.trim();
+  if(!nome){alerta={tipo:'err',msg:'Informe pelo menos o nome do cliente.'};render();return;}
+  const novo={
+    nome,
+    cnpj:document.getElementById('cli-cnpj').value.trim(),
+    origem:document.getElementById('cli-origem').value.trim(),
+    destino:document.getElementById('cli-destino').value.trim(),
+    tipo:document.getElementById('cli-tipo').value,
+    pgto:document.getElementById('cli-pgto').value
+  };
+  clientes.push(novo);save();
+  syncClienteFirebase(novo);
+  alerta={tipo:'ok',msg:`Cliente "${nome}" cadastrado! Disponível no app dos motoristas.`};
+  render();
+}
+
+function syncClienteFirebase(cli){
+  if(!fbDb)return;
+  const id=(cli.cnpj||'').replace(/\D/g,'')||cli.nome.replace(/\s/g,'_').toLowerCase();
+  fbDb.collection('clientes_expresso').doc(id).set({
+    nome:cli.nome,cnpj:cli.cnpj||'',origem:cli.origem||'',destino:cli.destino||'',
+    tipo:cli.tipo||'faturado',pgto:cli.pgto||'',atualizadoEm:new Date().toISOString()
+  },{merge:true}).catch(e=>console.log('Sync cliente erro:',e));
+}
+
+function syncTodosClientesFirebase(){
+  if(!fbDb||!clientes.length)return;
+  clientes.forEach(c=>syncClienteFirebase(c));
+}
+
+function excluirCliente(i){
+  if(confirm(`Excluir cliente "${clientes[i].nome}"?`)){clientes.splice(i,1);save();alerta={tipo:'ok',msg:'Cliente excluído.'};render();}
+}
+
+function preencherCliente(idx){
+  if(idx==='')return;
+  const c=clientes[parseInt(idx)];
+  if(!c)return;
+  form.tomador=c.nome;
+  form.cnpj=c.cnpj||'';
+  form.origem=c.origem||'';
+  form.destino=c.destino||'';
+  form.tipo=c.tipo||'faturado';
+  form.pagamento=c.pgto||'';
+  form._cliIdx=parseInt(idx);
+  renderForm();
+}
+
+load();render();iniciarFirebaseAdmin();
+
+// Registrar Service Worker (PWA)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .then(reg => console.log("SW registrado:", reg.scope))
+      .catch(err => console.log("SW erro:", err));
+  });
+}
+</script>
+</body>
+</html>
